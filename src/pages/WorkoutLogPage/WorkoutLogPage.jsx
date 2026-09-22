@@ -4,6 +4,7 @@ import WorkoutHeader from '../../components/organisms/WorkoutHeader/WorkoutHeade
 import SetEntryPanel from '../../components/organisms/SetEntryPanel/SetEntryPanel';
 import LoggedSetsList from '../../components/organisms/LoggedSetsList/LoggedSetsList';
 import WorkoutActions from '../../components/organisms/WorkoutActions/WorkoutActions';
+import { cleanNumber } from '../../utils/numbers';
 import styles from './WorkoutLogPage.module.css';
 
 function getTodayString() {
@@ -55,15 +56,17 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
     let max = 0;
     workoutHistory.forEach(w => {
       w.sets.forEach(s => {
-        if (s.exerciseId === selectedExerciseId && Number(s.weight) > max) {
-          max = Number(s.weight);
+        const wt = cleanNumber(s.weight);
+        if (s.exerciseId === selectedExerciseId && wt > max) {
+          max = wt;
         }
       });
     });
     // Also check current session logged sets
     loggedSets.forEach(s => {
-      if (s.exerciseId === selectedExerciseId && s.weight > max) {
-        max = s.weight;
+      const wt = cleanNumber(s.weight);
+      if (s.exerciseId === selectedExerciseId && wt > max) {
+        max = wt;
       }
     });
     return max;
@@ -72,15 +75,16 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
   // Comparison text
   const comparison = useMemo(() => {
     if (!previousSet || !weight || !selectedExerciseId) return null;
-    const w = Number(weight);
+    const w = cleanNumber(weight);
     const r = Number(reps) || 0;
-    const prevW = Number(previousSet.weight);
+    const prevW = cleanNumber(previousSet.weight);
     const prevR = Number(previousSet.reps);
     if (w <= 0) return null;
 
     const parts = [];
-    if (w > prevW) parts.push(`+${w - prevW} lbs from previous`);
-    else if (w < prevW) parts.push(`${w - prevW} lbs from previous`);
+    const diff = cleanNumber(w - prevW);
+    if (diff > 0) parts.push(`+${diff} lbs from previous`);
+    else if (diff < 0) parts.push(`${diff} lbs from previous`);
     else parts.push('Same weight');
 
     if (r > 0 && prevR > 0) {
@@ -95,7 +99,7 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
     if (!selectedExerciseId || !weight || Number(weight) <= 0 || !reps || Number(reps) <= 0) return;
 
     const exerciseName = exercises.find(e => e.id === selectedExerciseId)?.name || '';
-    const w = Number(weight);
+    const w = cleanNumber(weight);
 
     const newSet = {
       id: crypto.randomUUID ? crypto.randomUUID() : `set-${Date.now()}-${Math.random()}`,

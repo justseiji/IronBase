@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import SectionHeading from '../../components/atoms/SectionHeading/SectionHeading';
 import ExerciseSelector from '../../components/molecules/ExerciseSelector/ExerciseSelector';
-import ProgressChart from '../../components/molecules/ProgressChart/ProgressChart';
 import MetricToggle from '../../components/molecules/MetricToggle/MetricToggle';
+import ProgressChart from '../../components/molecules/ProgressChart/ProgressChart';
+import { cleanNumber } from '../../utils/numbers';
 import styles from './ExerciseHistoryPage.module.css';
 
 function formatDate(dateStr) {
@@ -52,9 +53,9 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
 
     return Object.entries(grouped)
       .map(([date, sets]) => {
-        const maxWeight = Math.max(...sets.map(s => Number(s.weight)));
-        const totalVolume = sets.reduce((sum, s) => sum + Number(s.weight) * Number(s.reps), 0);
-        const maxE1RM = Math.max(...sets.map(s => calcE1RM(Number(s.weight), Number(s.reps))));
+        const maxWeight = cleanNumber(Math.max(...sets.map(s => cleanNumber(s.weight))));
+        const totalVolume = cleanNumber(sets.reduce((sum, s) => sum + cleanNumber(s.weight) * Number(s.reps), 0));
+        const maxE1RM = cleanNumber(Math.max(...sets.map(s => calcE1RM(cleanNumber(s.weight), Number(s.reps)))));
         return { date, maxWeight, totalVolume, maxE1RM, sets };
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -103,7 +104,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
     if (sessionData.length === 1) return `You've logged your first ${selectedExercise?.name || 'exercise'} session.`;
     const first = sessionData[0].maxWeight;
     const last = sessionData[sessionData.length - 1].maxWeight;
-    const diff = last - first;
+    const diff = cleanNumber(last - first);
     if (last >= Math.max(...sessionData.map(s => s.maxWeight))) {
       return `Your latest ${selectedExercise?.name} session is your strongest.`;
     }
@@ -177,7 +178,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
           <div className={styles.compCard}>
             <span className={styles.compLabel}>Progress</span>
             <span className={styles.compValue}>
-              +{sessionData[sessionData.length-1].maxWeight - sessionData[0].maxWeight} lbs
+              +{cleanNumber(sessionData[sessionData.length-1].maxWeight - sessionData[0].maxWeight)} lbs
             </span>
           </div>
         </div>

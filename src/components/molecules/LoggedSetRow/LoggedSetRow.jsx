@@ -1,4 +1,5 @@
 import IconButton from '../../atoms/IconButton/IconButton';
+import { cleanNumber } from '../../../utils/numbers';
 import styles from './LoggedSetRow.module.css';
 
 export default function LoggedSetRow({ set, onEdit, onDelete, isEditing = false }) {
@@ -12,7 +13,7 @@ export default function LoggedSetRow({ set, onEdit, onDelete, isEditing = false 
       <div className={styles.info}>
         <span className={styles.exercise}>{set.exerciseName}</span>
         <span className={styles.details}>
-          {set.weight} lbs × {set.reps} reps{set.rpe ? ` @ RPE ${set.rpe}` : ''}
+          {cleanNumber(set.weight)} lbs × {cleanNumber(set.reps)} reps{set.rpe ? ` @ RPE ${cleanNumber(set.rpe)}` : ''}
         </span>
       </div>
       <div className={styles.actions}>

@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
+import { cleanNumber } from '../../../utils/numbers';
 import styles from './TrainingHeatmap.module.css';
 
 function formatDateLabel(d) {
@@ -24,7 +25,7 @@ export default function TrainingHeatmap({ workoutHistory = [] }) {
       if (!workoutMap[key]) workoutMap[key] = { sets: 0, volume: 0, exercises: new Set() };
       w.sets.forEach(s => {
         workoutMap[key].sets++;
-        workoutMap[key].volume += Number(s.weight) * Number(s.reps);
+        workoutMap[key].volume = cleanNumber(workoutMap[key].volume + cleanNumber(s.weight) * Number(s.reps));
         workoutMap[key].exercises.add(s.exerciseId);
       });
     });
@@ -130,7 +131,7 @@ export default function TrainingHeatmap({ workoutHistory = [] }) {
             {activeCell.exerciseCount} exercise{activeCell.exerciseCount !== 1 ? 's' : ''} · {activeCell.sets} set{activeCell.sets !== 1 ? 's' : ''}
           </div>
           <div className={styles.tooltipVolume}>
-            {activeCell.volume.toLocaleString()} lbs·reps
+            {cleanNumber(activeCell.volume).toLocaleString()} lbs·reps
           </div>
         </div>
       )}

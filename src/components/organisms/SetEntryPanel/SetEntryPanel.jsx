@@ -1,5 +1,6 @@
 import ExerciseSelector from '../../molecules/ExerciseSelector/ExerciseSelector';
 import SetInputRow from '../../molecules/SetInputRow/SetInputRow';
+import { cleanNumber } from '../../../utils/numbers';
 import styles from './SetEntryPanel.module.css';
 
 export default function SetEntryPanel({ exercises, selectedExerciseId, onSelectExercise, weight, onWeightChange, reps, onRepsChange, rpe, onRpeChange, onAddSet, isEditing, onCancelEdit, previousSet, comparison }) {
@@ -15,7 +16,7 @@ export default function SetEntryPanel({ exercises, selectedExerciseId, onSelectE
         <div className={styles.previousSession}>
           <span className={styles.prevLabel}>Previous session</span>
           <span className={styles.prevValue}>
-            {previousSet.weight} lbs × {previousSet.reps}{previousSet.rpe ? ` @ RPE ${previousSet.rpe}` : ''}
+            {cleanNumber(previousSet.weight)} lbs × {cleanNumber(previousSet.reps)}{previousSet.rpe ? ` @ RPE ${cleanNumber(previousSet.rpe)}` : ''}
           </span>
         </div>
       )}

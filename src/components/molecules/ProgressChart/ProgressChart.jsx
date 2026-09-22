@@ -1,4 +1,5 @@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
+import { cleanNumber } from '../../../utils/numbers';
 import styles from './ProgressChart.module.css';
 
 function formatDateShort(dateStr) {
@@ -12,7 +13,7 @@ function CustomTooltip({ active, payload, label, unit }) {
     <div className={styles.tooltip}>
       <div className={styles.tooltipDate}>{formatDateShort(label)}</div>
       <div className={styles.tooltipValue}>
-        {payload[0].value} <span className={styles.tooltipUnit}>{unit}</span>
+        {cleanNumber(payload[0].value)} <span className={styles.tooltipUnit}>{unit}</span>
       </div>
     </div>
   );
@@ -37,7 +38,7 @@ export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentC
     return (
       <div className={styles.chart}>
         <div className={styles.singlePoint}>
-          <span className={styles.singleValue}>{data[0].value} <span className={styles.singleUnit}>{unit}</span></span>
+          <span className={styles.singleValue}>{cleanNumber(data[0].value)} <span className={styles.singleUnit}>{unit}</span></span>
           <span className={styles.singleDate}>{formatDateShort(data[0].date)}</span>
         </div>
         <ResponsiveContainer width="100%" height={180}>

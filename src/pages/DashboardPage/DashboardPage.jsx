@@ -4,6 +4,7 @@ import Button from '../../components/atoms/Button/Button';
 import ProgressChart from '../../components/molecules/ProgressChart/ProgressChart';
 import MetricToggle from '../../components/molecules/MetricToggle/MetricToggle';
 import TrainingHeatmap from '../../components/molecules/TrainingHeatmap/TrainingHeatmap';
+import { cleanNumber } from '../../utils/numbers';
 import styles from './DashboardPage.module.css';
 
 function formatDate(dateStr) {
@@ -61,7 +62,7 @@ export default function DashboardPage({ exercises, workoutHistory }) {
       const lastWeight = dates.length > 0 ? sessions[dates[dates.length - 1]] : 0;
       let progressPct = null;
       if (dates.length >= 2 && firstWeight > 0) {
-        progressPct = ((lastWeight - firstWeight) / firstWeight * 100).toFixed(1);
+        progressPct = cleanNumber(((lastWeight - firstWeight) / firstWeight) * 100);
       }
       return { ...ex, maxWeight, progressPct, sessionCount: dates.length };
     }).filter(ex => ex.maxWeight > 0);
@@ -80,9 +81,9 @@ export default function DashboardPage({ exercises, workoutHistory }) {
     });
     return Object.entries(grouped)
       .map(([date, sets]) => {
-        const maxWeight = Math.max(...sets.map(s => Number(s.weight)));
-        const totalVolume = sets.reduce((sum, s) => sum + Number(s.weight) * Number(s.reps), 0);
-        const maxE1RM = Math.max(...sets.map(s => calcE1RM(Number(s.weight), Number(s.reps))));
+        const maxWeight = cleanNumber(Math.max(...sets.map(s => cleanNumber(s.weight))));
+        const totalVolume = cleanNumber(sets.reduce((sum, s) => sum + cleanNumber(s.weight) * Number(s.reps), 0));
+        const maxE1RM = cleanNumber(Math.max(...sets.map(s => calcE1RM(cleanNumber(s.weight), Number(s.reps)))));
         return { date, maxWeight, totalVolume, maxE1RM };
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -104,7 +105,7 @@ export default function DashboardPage({ exercises, workoutHistory }) {
     if (chartSessionData.length === 1) return `You've logged your first ${chartExercise?.name || 'exercise'} session. Keep going.`;
     const first = chartSessionData[0].maxWeight;
     const last = chartSessionData[chartSessionData.length - 1].maxWeight;
-    const diff = last - first;
+    const diff = cleanNumber(last - first);
     if (last >= Math.max(...chartSessionData.map(s => s.maxWeight))) {
       return `Your latest ${chartExercise?.name || 'exercise'} session is your strongest.`;
     }
@@ -144,7 +145,7 @@ export default function DashboardPage({ exercises, workoutHistory }) {
     const prMap = {};
     workoutHistory.forEach(w => {
       w.sets.forEach(s => {
-        const wt = Number(s.weight);
+        const wt = cleanNumber(s.weight);
         if (!prMap[s.exerciseId] || wt > prMap[s.exerciseId].weight) {
           prMap[s.exerciseId] = { exerciseId: s.exerciseId, weight: wt, reps: Number(s.reps), workoutId: w.id };
         }
@@ -168,7 +169,10 @@ export default function DashboardPage({ exercises, workoutHistory }) {
       .map(w => {
         const exerciseNames = [...new Set(w.sets.map(s => exercises.find(e => e.id === s.exerciseId)?.name).filter(Boolean))];
         let heaviest = 0;
-        w.sets.forEach(s => { if (Number(s.weight) > heaviest) heaviest = Number(s.weight); });
+        w.sets.forEach(s => { 
+          const wt = cleanNumber(s.weight);
+          if (wt > heaviest) heaviest = wt; 
+        });
         return { ...w, exerciseNames, heaviest };
       });
   }, [workoutHistory, exercises]);

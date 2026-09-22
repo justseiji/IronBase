@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SectionHeading from '../../components/atoms/SectionHeading/SectionHeading';
 import Button from '../../components/atoms/Button/Button';
 import IconButton from '../../components/atoms/IconButton/IconButton';
+import { cleanNumber } from '../../utils/numbers';
 import styles from './WorkoutHistoryPage.module.css';
 
 function formatDate(dateStr) {
@@ -92,7 +93,7 @@ export default function WorkoutHistoryPage({ exercises, workoutHistory, onDelete
                     <div key={i} className={styles.setRow}>
                       <span className={styles.setExercise}>{getExerciseName(set.exerciseId)}</span>
                       {' — '}
-                      {set.weight} lbs × {set.reps} reps{set.rpe ? ` @ RPE ${set.rpe}` : ''}
+                      {cleanNumber(set.weight)} lbs × {cleanNumber(set.reps)} reps{set.rpe ? ` @ RPE ${cleanNumber(set.rpe)}` : ''}
                     </div>
                   ))}
                 </div>
