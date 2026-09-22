@@ -229,3 +229,46 @@
     max-width: 480px;
   }
 }
+
+.insight {
+  font-size: 0.813rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  line-height: 1.4;
+}
+
+.progressComparison {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.compCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compLabel {
+  font-size: 0.688rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.compValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.compHint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.firstSession {
+  margin-bottom: var(--space-4);
+}

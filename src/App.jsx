@@ -60,6 +60,7 @@ export default function App() {
           element={
             <WorkoutLogPage
               exercises={exercises}
+              workoutHistory={workoutHistory}
               onSaveWorkout={handleSaveWorkout}
             />
           }

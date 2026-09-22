@@ -1,4 +1,4 @@
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
 import styles from './ProgressChart.module.css';
 
 function formatDateShort(dateStr) {
@@ -19,55 +19,51 @@ function CustomTooltip({ active, payload, label, unit }) {
 }
 
 export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentColor = '#A68B6B' }) {
-  if (!data || data.length < 2) {
+  const showDots = !data || data.length <= 20;
+  
+  // State 0: No data — show chart skeleton with baseline
+  if (!data || data.length === 0) {
     return (
-      <div className={styles.empty}>
-        <p>Not enough data yet</p>
-        <p className={styles.emptyHint}>Keep logging to see your trend.</p>
+      <div className={styles.chart}>
+        <div className={styles.emptyChart}>
+          <div className={styles.emptyBaseline} />
+          <p className={styles.emptyText}>Start logging to build your progression.</p>
+        </div>
       </div>
     );
   }
 
-  const showDots = data.length <= 20;
+  // State 1: Single data point — show dot on baseline
+  if (data.length === 1) {
+    return (
+      <div className={styles.chart}>
+        <div className={styles.singlePoint}>
+          <span className={styles.singleValue}>{data[0].value} <span className={styles.singleUnit}>{unit}</span></span>
+          <span className={styles.singleDate}>{formatDateShort(data[0].date)}</span>
+        </div>
+        <ResponsiveContainer width="100%" height={180}>
+          <LineChart data={data} margin={{ top: 20, right: 20, bottom: 0, left: -12 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(238,232,223,0.06)" vertical={false} />
+            <ReferenceLine y={data[0].value} stroke="rgba(238,232,223,0.06)" strokeDasharray="3 3" />
+            <XAxis dataKey="date" tickFormatter={formatDateShort} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={{ stroke: 'rgba(238,232,223,0.06)' }} tickLine={false} tickMargin={8} />
+            <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} domain={[d => d * 0.9, d => d * 1.1]} />
+            <Line type="monotone" dataKey="value" stroke={accentColor} strokeWidth={0} dot={{ r: 5, fill: accentColor, stroke: '#1A1D20', strokeWidth: 2 }} animationDuration={400} animationEasing="ease-out" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
 
+  // State 2+: Full line chart
   return (
     <div className={styles.chart}>
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="rgba(238,232,223,0.06)"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="date"
-            tickFormatter={formatDateShort}
-            tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }}
-            axisLine={{ stroke: 'rgba(238,232,223,0.06)' }}
-            tickLine={false}
-            tickMargin={8}
-          />
-          <YAxis
-            tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            width={40}
-            domain={['auto', 'auto']}
-          />
-          <Tooltip
-            content={<CustomTooltip unit={unit} />}
-            cursor={{ stroke: 'rgba(238,232,223,0.1)' }}
-          />
-          <Line
-            type="monotone"
-            dataKey="value"
-            stroke={accentColor}
-            strokeWidth={2}
-            dot={showDots ? { r: 3, fill: accentColor, stroke: accentColor } : false}
-            activeDot={{ r: 5, fill: accentColor, stroke: '#1A1D20', strokeWidth: 2 }}
-            animationDuration={800}
-            animationEasing="ease-out"
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(238,232,223,0.06)" vertical={false} />
+          <XAxis dataKey="date" tickFormatter={formatDateShort} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={{ stroke: 'rgba(238,232,223,0.06)' }} tickLine={false} tickMargin={8} />
+          <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} domain={['auto', 'auto']} />
+          <Tooltip content={<CustomTooltip unit={unit} />} cursor={{ stroke: 'rgba(238,232,223,0.1)' }} />
+          <Line type="monotone" dataKey="value" stroke={accentColor} strokeWidth={2} dot={showDots ? { r: 3, fill: accentColor, stroke: accentColor } : false} activeDot={{ r: 5, fill: accentColor, stroke: '#1A1D20', strokeWidth: 2 }} animationDuration={600} animationEasing="ease-out" />
         </LineChart>
       </ResponsiveContainer>
     </div>

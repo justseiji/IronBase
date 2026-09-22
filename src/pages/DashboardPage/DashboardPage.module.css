@@ -2,7 +2,6 @@
   animation: fadeSlideUp 0.2s ease-out;
 }
 
-/* Greeting */
 .greeting {
   display: flex;
   justify-content: space-between;
@@ -19,7 +18,6 @@
   line-height: 1.1;
 }
 
-/* Sections */
 .section {
   margin-bottom: var(--space-5, 40px);
 }
@@ -34,23 +32,28 @@
   margin-bottom: var(--space-2);
 }
 
-/* Strength Overview */
+/* Strength */
 .strengthList {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .strengthRow {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  padding: 12px 0;
+  align-items: center;
+  padding: 14px 0;
   border-bottom: 1px solid rgba(238, 232, 223, 0.04);
 }
 
 .strengthRow:last-child {
   border-bottom: none;
+}
+
+.strengthLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .strengthName {
@@ -60,7 +63,7 @@
 }
 
 .strengthValue {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
@@ -70,23 +73,105 @@
   color: var(--color-text-muted);
 }
 
+.progressUp {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: #4ADE80;
+}
+
+.progressDown {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: #F87171;
+}
+
+.progressFirst {
+  font-size: 0.688rem;
+  color: var(--color-text-muted);
+}
+
+/* Chart */
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.chartControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.chartSelect {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 32px;
+}
+
+.insight {
+  font-size: 0.813rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  line-height: 1.4;
+}
+
+/* Consistency */
+.consistencyRow {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.consistencyStat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.consistencyValue {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.consistencyLabel {
+  font-size: 0.813rem;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
 /* Personal Records */
 .prList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
 }
 
-.prCard {
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-3);
+.prRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(238, 232, 223, 0.04);
 }
 
-.prHeader {
+.prRow:last-child {
+  border-bottom: none;
+}
+
+.prLeft {
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -98,7 +183,7 @@
 }
 
 .prNew {
-  font-size: 0.563rem;
+  font-size: 0.5rem;
   font-weight: 700;
   color: var(--color-accent);
   text-transform: uppercase;
@@ -106,6 +191,7 @@
   background: rgba(166, 139, 107, 0.15);
   padding: 2px 6px;
   border-radius: 4px;
+  animation: fadeSlideUp 0.3s ease-out;
 }
 
 .prValue {
@@ -115,64 +201,62 @@
 }
 
 /* Recent Workouts */
-.workoutList {
+.workoutTimeline {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
 }
 
-.workoutCard {
+.workoutEntry {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
+  gap: var(--space-3);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(238, 232, 223, 0.04);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: opacity var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
-.workoutCard:hover {
-  background: rgba(26, 29, 32, 0.6);
+.workoutEntry:last-child {
+  border-bottom: none;
 }
 
-.workoutCard:active {
-  transform: scale(0.99);
+.workoutEntry:active {
+  opacity: 0.7;
 }
 
-.workoutLeft {
+.workoutDateCol {
+  min-width: 64px;
+  flex-shrink: 0;
+}
+
+.workoutDate {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.workoutContent {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.workoutDate {
+.workoutFocus {
   font-size: 0.875rem;
   font-weight: 600;
 }
 
-.workoutMeta {
+.workoutExercises {
   font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.workoutStats {
+  font-size: 0.688rem;
   color: var(--color-text-muted);
 }
 
-.workoutRight {
-  text-align: right;
-}
-
-.workoutHeavy {
-  font-size: 1rem;
-  font-weight: 700;
-  display: block;
-}
-
-.workoutHeavyLabel {
-  font-size: 0.625rem;
-  color: var(--color-text-muted);
-}
-
-/* View All */
 .viewAll {
   margin-top: var(--space-2);
 }
@@ -182,7 +266,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: var(--space-6, 48px) var(--space-2);
   text-align: center;
 }
@@ -206,10 +289,6 @@
 @media (min-width: 768px) {
   .greetingText {
     font-size: 2.5rem;
-  }
-
-  .strengthList {
-    max-width: 480px;
   }
 
   .section {

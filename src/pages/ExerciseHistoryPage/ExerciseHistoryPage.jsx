@@ -98,6 +98,19 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
 
   const hasData = allSets.length > 0;
 
+  const insight = useMemo(() => {
+    if (sessionData.length === 0) return 'Start logging to build your progression history.';
+    if (sessionData.length === 1) return `You've logged your first ${selectedExercise?.name || 'exercise'} session.`;
+    const first = sessionData[0].maxWeight;
+    const last = sessionData[sessionData.length - 1].maxWeight;
+    const diff = last - first;
+    if (last >= Math.max(...sessionData.map(s => s.maxWeight))) {
+      return `Your latest ${selectedExercise?.name} session is your strongest.`;
+    }
+    if (diff > 0) return `Your ${selectedExercise?.name} is up ${diff} lbs since your first session.`;
+    return `You've logged ${sessionData.length} ${selectedExercise?.name} sessions.`;
+  }, [sessionData, selectedExercise]);
+
   return (
     <div className={styles.page}>
       <div className={styles.selectorSection}>
@@ -108,65 +121,84 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
         />
       </div>
 
-      {!hasData ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity="0.3">
-              <path d="M3 3v18h18" />
-              <path d="M7 16l4-5 4 3 5-7" />
-            </svg>
-          </div>
-          <p className={styles.emptyTitle}>No history for {selectedExercise?.name || 'this exercise'}</p>
-          <p className={styles.emptyHint}>Start logging sets to track your progression.</p>
-        </div>
-      ) : (
-        <>
-          {/* Exercise Header */}
-          <div className={styles.exerciseHeader}>
-            <h1 className={styles.exerciseName}>{selectedExercise?.name}</h1>
-            <div className={styles.exerciseStats}>
-              <span className={styles.bestSetLabel}>
-                {bestSet?.weight} lbs × {bestSet?.reps}
+      {hasData && (
+        <div className={styles.exerciseHeader}>
+          <h1 className={styles.exerciseName}>{selectedExercise?.name}</h1>
+          <div className={styles.exerciseStats}>
+            <span className={styles.bestSetLabel}>
+              {bestSet?.weight} lbs × {bestSet?.reps}
+            </span>
+            {bestE1RM > 0 && (
+              <span className={styles.e1rmBadge}>
+                Est. 1RM {bestE1RM} lbs
               </span>
-              {bestE1RM > 0 && (
-                <span className={styles.e1rmBadge}>
-                  Est. 1RM {bestE1RM} lbs
-                </span>
-              )}
-              {progressPct !== null && (
-                <span className={Number(progressPct) >= 0 ? styles.progressUp : styles.progressDown}>
-                  {Number(progressPct) >= 0 ? '↑' : '↓'} {Math.abs(Number(progressPct))}% since first session
-                </span>
-              )}
-            </div>
+            )}
+            {progressPct !== null && (
+              <span className={Number(progressPct) >= 0 ? styles.progressUp : styles.progressDown}>
+                {Number(progressPct) >= 0 ? '↑' : '↓'} {Math.abs(Number(progressPct))}% since first session
+              </span>
+            )}
           </div>
+        </div>
+      )}
 
-          {/* Metric Toggle + Chart */}
-          <div className={styles.chartSection}>
-            <div className={styles.chartHeader}>
-              <span className={styles.chartLabel}>Progression</span>
-              <MetricToggle
-                options={METRIC_OPTIONS}
-                activeValue={activeMetric}
-                onChange={setActiveMetric}
-              />
-            </div>
-            <ProgressChart
-              key={activeMetric}
-              data={chartData}
-              metricLabel={METRIC_OPTIONS.find(o => o.value === activeMetric)?.label}
-              unit={chartUnit}
-            />
+      <div className={styles.chartSection}>
+        <div className={styles.chartHeader}>
+          <span className={styles.chartLabel}>Progression</span>
+          <MetricToggle
+            options={METRIC_OPTIONS}
+            activeValue={activeMetric}
+            onChange={setActiveMetric}
+          />
+        </div>
+        <ProgressChart
+          key={activeMetric}
+          data={chartData}
+          metricLabel={METRIC_OPTIONS.find(o => o.value === activeMetric)?.label}
+          unit={chartUnit}
+        />
+        <p className={styles.insight}>{insight}</p>
+      </div>
+
+      {sessionData.length >= 2 && (
+        <div className={styles.progressComparison}>
+          <div className={styles.compCard}>
+            <span className={styles.compLabel}>Current</span>
+            <span className={styles.compValue}>
+              {sessionData[sessionData.length-1].maxWeight} lbs × {sessionData[sessionData.length-1].sets.find(s => Number(s.weight) === sessionData[sessionData.length-1].maxWeight)?.reps}
+            </span>
           </div>
+          <div className={styles.compCard}>
+            <span className={styles.compLabel}>First Logged</span>
+            <span className={styles.compValue}>
+              {sessionData[0].maxWeight} lbs
+            </span>
+          </div>
+          <div className={styles.compCard}>
+            <span className={styles.compLabel}>Progress</span>
+            <span className={styles.compValue}>
+              +{sessionData[sessionData.length-1].maxWeight - sessionData[0].maxWeight} lbs
+            </span>
+          </div>
+        </div>
+      )}
 
-          {/* Estimated 1RM Card */}
+      {sessionData.length === 1 && (
+        <div className={styles.firstSession}>
+          <span className={styles.compLabel}>First Session</span>
+          <span className={styles.compValue}>{sessionData[0].maxWeight} lbs</span>
+          <span className={styles.compHint}>Keep logging to see your progress.</span>
+        </div>
+      )}
+
+      {hasData && (
+        <>
           <div className={styles.e1rmCard}>
             <div className={styles.e1rmLabel}>Estimated 1RM</div>
             <div className={styles.e1rmValue}>{bestE1RM} <span className={styles.e1rmUnit}>lbs</span></div>
             <div className={styles.e1rmSub}>Epley formula · Based on best logged set</div>
           </div>
 
-          {/* Personal Records */}
           <div className={styles.prSection}>
             <span className={styles.prTitle}>Personal Records</span>
             <div className={styles.prGrid}>
@@ -188,7 +220,6 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
             </div>
           </div>
 
-          {/* Previous Performances */}
           <div className={styles.historySection}>
             <span className={styles.historyTitle}>Session History</span>
             {[...sessionData].reverse().map(session => (

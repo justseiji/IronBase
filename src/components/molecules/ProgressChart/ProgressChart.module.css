@@ -8,6 +8,55 @@
   to { opacity: 1; }
 }
 
+.emptyChart {
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.emptyBaseline {
+  position: absolute;
+  left: 40px;
+  right: 8px;
+  top: 50%;
+  height: 1px;
+  background: rgba(238, 232, 223, 0.08);
+}
+
+.emptyText {
+  font-size: 0.813rem;
+  color: rgba(238, 232, 223, 0.3);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.singlePoint {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-1);
+}
+
+.singleValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.singleUnit {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgba(238, 232, 223, 0.5);
+}
+
+.singleDate {
+  font-size: 0.75rem;
+  color: rgba(238, 232, 223, 0.4);
+}
+
 .tooltip {
   background: #1A1D20;
   padding: 8px 12px;
@@ -32,21 +81,4 @@
   font-weight: 400;
   color: rgba(238, 232, 223, 0.5);
   font-size: 0.75rem;
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 180px;
-  color: rgba(238, 232, 223, 0.5);
-  text-align: center;
-  font-size: 0.875rem;
-}
-
-.emptyHint {
-  font-size: 0.75rem;
-  color: rgba(238, 232, 223, 0.3);
-  margin-top: 4px;
 }
