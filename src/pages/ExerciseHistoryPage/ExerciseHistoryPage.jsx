@@ -75,9 +75,9 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
 
   // Best set overall
   const bestSet = useMemo(() => {
-    if (allSets.length === 0) return null;
+    const allSets = sessionData.flatMap(s => s.sets);
     return allSets.reduce((best, s) => {
-      if (!best || Number(s.weight) > Number(best.weight)) return s;
+      if (!best || cleanNumber(s.weight) > cleanNumber(best.weight)) return s;
       return best;
     }, null);
   }, [allSets]);
@@ -85,7 +85,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
   // Best e1RM
   const bestE1RM = useMemo(() => {
     if (allSets.length === 0) return 0;
-    return Math.max(...allSets.map(s => calcE1RM(Number(s.weight), Number(s.reps))));
+    return cleanNumber(Math.max(...allSets.map(s => calcE1RM(cleanNumber(s.weight), Number(s.reps)))));
   }, [allSets]);
 
   // Progress percentage (first session vs last session max weight)
@@ -127,7 +127,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
           <h1 className={styles.exerciseName}>{selectedExercise?.name}</h1>
           <div className={styles.exerciseStats}>
             <span className={styles.bestSetLabel}>
-              {bestSet?.weight} lbs × {bestSet?.reps}
+              {cleanNumber(bestSet?.weight)} lbs × {cleanNumber(bestSet?.reps)}
             </span>
             {bestE1RM > 0 && (
               <span className={styles.e1rmBadge}>
@@ -166,7 +166,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
           <div className={styles.compCard}>
             <span className={styles.compLabel}>Current</span>
             <span className={styles.compValue}>
-              {sessionData[sessionData.length-1].maxWeight} lbs × {sessionData[sessionData.length-1].sets.find(s => Number(s.weight) === sessionData[sessionData.length-1].maxWeight)?.reps}
+              {sessionData[sessionData.length-1].maxWeight} lbs × {cleanNumber(sessionData[sessionData.length-1].sets.find(s => cleanNumber(s.weight) === sessionData[sessionData.length-1].maxWeight)?.reps)}
             </span>
           </div>
           <div className={styles.compCard}>
@@ -205,7 +205,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
             <div className={styles.prGrid}>
               <div className={styles.prCard}>
                 <span className={styles.prLabel}>Heaviest</span>
-                <span className={styles.prValue}>{bestSet?.weight} <span className={styles.prUnit}>lbs</span></span>
+                <span className={styles.prValue}>{cleanNumber(bestSet?.weight)} <span className={styles.prUnit}>lbs</span></span>
               </div>
               <div className={styles.prCard}>
                 <span className={styles.prLabel}>Best e1RM</span>
@@ -228,7 +228,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
                 <div className={styles.dateLabel}>{formatDate(session.date)}</div>
                 {session.sets.map((s, i) => (
                   <div key={i} className={styles.setRow}>
-                    {s.weight} lbs × {s.reps} reps{s.rpe ? ` @ RPE ${s.rpe}` : ''}
+                    {cleanNumber(s.weight)} lbs × {cleanNumber(s.reps)} reps{s.rpe ? ` @ RPE ${cleanNumber(s.rpe)}` : ''}
                   </div>
                 ))}
               </div>

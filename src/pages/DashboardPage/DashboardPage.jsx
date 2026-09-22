@@ -52,7 +52,7 @@ export default function DashboardPage({ exercises, workoutHistory }) {
         w.sets.forEach(s => {
           if (s.exerciseId === ex.id) {
             if (!sessions[w.date]) sessions[w.date] = 0;
-            sessions[w.date] = Math.max(sessions[w.date], Number(s.weight));
+            sessions[w.date] = Math.max(sessions[w.date], cleanNumber(s.weight));
           }
         });
       });

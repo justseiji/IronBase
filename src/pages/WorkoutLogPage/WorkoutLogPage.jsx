@@ -45,7 +45,7 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
     const lastSets = sessions[lastDate];
     // Return the heaviest set from the most recent session
     return lastSets.reduce((best, s) => {
-      if (!best || Number(s.weight) > Number(best.weight)) return s;
+      if (!best || cleanNumber(s.weight) > cleanNumber(best.weight)) return s;
       return best;
     }, null);
   }, [workoutHistory, selectedExerciseId]);
