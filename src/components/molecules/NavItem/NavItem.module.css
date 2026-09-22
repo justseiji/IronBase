@@ -1,0 +1,33 @@
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition-fast);
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+}
+
+.active {
+  color: var(--color-accent);
+}
+
+.navItem:hover {
+  color: var(--color-text);
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  /* default styling */
+}

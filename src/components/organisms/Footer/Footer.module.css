@@ -1,0 +1,13 @@
+.footer {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .footer {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+  }
+}

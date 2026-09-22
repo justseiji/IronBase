@@ -1,0 +1,83 @@
+.page {
+  animation: fadeSlideUp 0.3s ease-out;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  margin-bottom: var(--space-4);
+}
+
+.selector {
+  margin-bottom: var(--space-4);
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .comparison {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.compCard {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+.compLabel {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-1);
+}
+
+.compWeight {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.compDetails {
+  font-size: 0.813rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.historySection {
+}
+
+.dateGroup {
+  margin-bottom: var(--space-3);
+}
+
+.dateLabel {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 500;
+  margin-bottom: var(--space-1);
+}
+
+.setRow {
+  background: var(--color-surface);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  margin-bottom: 4px;
+}
+
+.empty {
+  text-align: center;
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+}

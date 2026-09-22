@@ -1,0 +1,36 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.actions > * {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .row {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  .inputs {
+    flex: 1;
+  }
+
+  .actions {
+    flex: 0 0 auto;
+    min-width: 140px;
+  }
+}
