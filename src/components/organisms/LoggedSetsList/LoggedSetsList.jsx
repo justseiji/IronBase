@@ -2,7 +2,7 @@ import SectionHeading from '../../atoms/SectionHeading/SectionHeading';
 import LoggedSetRow from '../../molecules/LoggedSetRow/LoggedSetRow';
 import styles from './LoggedSetsList.module.css';
 
-export default function LoggedSetsList({ sets, onEditSet, onDeleteSet }) {
+export default function LoggedSetsList({ sets, onEditSet, onDeleteSet, editingIndex }) {
   return (
     <div>
       <SectionHeading as="h3" className={styles.heading}>Logged Sets</SectionHeading>
@@ -16,6 +16,7 @@ export default function LoggedSetsList({ sets, onEditSet, onDeleteSet }) {
               set={set}
               onEdit={() => onEditSet(index)}
               onDelete={() => onDeleteSet(index)}
+              isEditing={editingIndex === index}
             />
           ))}
         </div>

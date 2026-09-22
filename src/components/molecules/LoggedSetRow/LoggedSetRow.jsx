@@ -1,9 +1,14 @@
 import IconButton from '../../atoms/IconButton/IconButton';
 import styles from './LoggedSetRow.module.css';
 
-export default function LoggedSetRow({ set, onEdit, onDelete }) {
+export default function LoggedSetRow({ set, onEdit, onDelete, isEditing = false }) {
+  const rowClasses = [
+    styles.row,
+    isEditing ? styles.editing : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={styles.row}>
+    <div className={rowClasses}>
       <div className={styles.info}>
         <span className={styles.exercise}>{set.exerciseName}</span>
         <span className={styles.details}>

@@ -128,6 +128,7 @@ export default function WorkoutLogPage({ exercises, onSaveWorkout }) {
           sets={loggedSets}
           onEditSet={handleEditSet}
           onDeleteSet={handleDeleteSet}
+          editingIndex={editingIndex}
         />
       </div>
 

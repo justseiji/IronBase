@@ -7,13 +7,32 @@
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: var(--transition-fast);
+  transition: color var(--transition-fast);
   border-radius: var(--radius-sm);
   min-height: 44px;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.navItem::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 16px;
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: 1px;
+  transition: transform var(--transition-fast);
 }
 
 .active {
   color: var(--color-accent);
+}
+
+.active::after {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .navItem:hover {
@@ -29,5 +48,4 @@
 }
 
 .label {
-  /* default styling */
 }

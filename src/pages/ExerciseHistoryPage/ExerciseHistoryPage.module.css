@@ -1,60 +1,173 @@
 .page {
-  animation: fadeSlideUp 0.3s ease-out;
+  animation: fadeSlideUp 0.2s ease-out;
 }
 
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.header {
+.selectorSection {
   margin-bottom: var(--space-4);
 }
 
-.selector {
+/* Exercise Header */
+.exerciseHeader {
   margin-bottom: var(--space-4);
 }
 
-.comparison {
-  display: grid;
-  grid-template-columns: 1fr;
+.exerciseName {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: var(--space-1);
+}
+
+.exerciseStats {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  align-items: center;
 }
 
-@media (min-width: 768px) {
-  .comparison {
-    grid-template-columns: 1fr 1fr;
-  }
+.bestSetLabel {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
 }
 
-.compCard {
-  background: var(--color-surface);
-  border-radius: var(--radius);
-  padding: var(--space-3);
-}
-
-.compLabel {
+.e1rmBadge {
   font-size: 0.75rem;
   color: var(--color-accent);
   font-weight: 500;
+  background: rgba(166, 139, 107, 0.1);
+  padding: 2px 10px;
+  border-radius: 100px;
+}
+
+.progressUp {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4ADE80;
+}
+
+.progressDown {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #F87171;
+}
+
+/* Chart Section */
+.chartSection {
+  margin-bottom: var(--space-4);
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.chartLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* e1RM Card */
+.e1rmCard {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.e1rmLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: var(--space-1);
 }
 
-.compWeight {
-  font-size: 1.5rem;
+.e1rmValue {
+  font-size: 2rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.compDetails {
-  font-size: 0.813rem;
+.e1rmUnit {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.e1rmSub {
+  font-size: 0.688rem;
   color: var(--color-text-muted);
   margin-top: 4px;
 }
 
+/* Personal Records */
+.prSection {
+  margin-bottom: var(--space-4);
+}
+
+.prTitle {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.prGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.prCard {
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prLabel {
+  font-size: 0.688rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.prValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.prUnit {
+  font-size: 0.688rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* Session History */
 .historySection {
+  margin-top: var(--space-2);
+}
+
+.historyTitle {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: var(--space-2);
 }
 
 .dateGroup {
@@ -63,21 +176,56 @@
 
 .dateLabel {
   font-size: 0.75rem;
-  color: var(--color-accent);
+  color: var(--color-text-muted);
   font-weight: 500;
   margin-bottom: var(--space-1);
 }
 
 .setRow {
-  background: var(--color-surface);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
   font-size: 0.875rem;
+  color: var(--color-text-muted);
+  border-left: 2px solid rgba(238, 232, 223, 0.06);
+  margin-bottom: 2px;
+  margin-left: var(--space-1);
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-2);
+  text-align: center;
+}
+
+.emptyIcon {
+  margin-bottom: var(--space-2);
+}
+
+.emptyTitle {
+  font-size: 0.938rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
   margin-bottom: 4px;
 }
 
-.empty {
-  text-align: center;
-  padding: var(--space-4);
-  color: var(--color-text-muted);
+.emptyHint {
+  font-size: 0.813rem;
+  color: rgba(238, 232, 223, 0.3);
+}
+
+@media (min-width: 768px) {
+  .exerciseName {
+    font-size: 2.5rem;
+  }
+
+  .chartSection {
+    max-width: 640px;
+  }
+
+  .prGrid {
+    max-width: 480px;
+  }
 }

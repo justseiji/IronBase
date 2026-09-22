@@ -1,113 +1,218 @@
 .page {
-  animation: fadeSlideUp 0.3s ease-out;
+  animation: fadeSlideUp 0.2s ease-out;
 }
 
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.header {
+/* Greeting */
+.greeting {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5, 40px);
   flex-wrap: wrap;
   gap: var(--space-2);
 }
 
-.content {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-4);
+.greetingText {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
-@media (min-width: 768px) {
-  .content {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
+/* Sections */
 .section {
+  margin-bottom: var(--space-5, 40px);
 }
 
-.sectionTitle {
+.sectionLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
   margin-bottom: var(--space-2);
 }
 
-.progressGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--space-2);
+/* Strength Overview */
+.strengthList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.progressCard {
-  background: var(--color-surface);
-  border-radius: var(--radius);
-  padding: var(--space-3);
+.strengthRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(238, 232, 223, 0.04);
+}
+
+.strengthRow:last-child {
+  border-bottom: none;
+}
+
+.strengthName {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.strengthValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.strengthUnit {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* Personal Records */
+.prList {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-.progressExercise {
-  font-size: 0.813rem;
-  color: var(--color-accent);
-  font-weight: 500;
-}
-
-.progressWeight {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.progressUnit {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  font-weight: 400;
-}
-
-.workoutCard {
+.prCard {
   background: var(--color-surface);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.workoutDate {
-  font-weight: 600;
-  font-size: 0.875rem;
+.prHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
-.workoutFocus {
-  font-size: 0.75rem;
+.prName {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.prNew {
+  font-size: 0.563rem;
+  font-weight: 700;
   color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(166, 139, 107, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.prValue {
+  font-size: 0.813rem;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
-.workoutSets {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
-
-.recentList {
+/* Recent Workouts */
+.workoutList {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-.empty {
-  text-align: center;
-  padding: var(--space-4);
+.workoutCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.workoutCard:hover {
+  background: rgba(26, 29, 32, 0.6);
+}
+
+.workoutCard:active {
+  transform: scale(0.99);
+}
+
+.workoutLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.workoutDate {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.workoutMeta {
+  font-size: 0.75rem;
   color: var(--color-text-muted);
 }
 
-.emptyButton {
+.workoutRight {
+  text-align: right;
+}
+
+.workoutHeavy {
+  font-size: 1rem;
+  font-weight: 700;
+  display: block;
+}
+
+.workoutHeavyLabel {
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+}
+
+/* View All */
+.viewAll {
   margin-top: var(--space-2);
 }
 
-.viewAll {
-  margin-top: var(--space-2);
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6, 48px) var(--space-2);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 0.938rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.emptyHint {
+  font-size: 0.813rem;
+  color: rgba(238, 232, 223, 0.3);
+}
+
+.emptyAction {
+  margin-top: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .greetingText {
+    font-size: 2.5rem;
+  }
+
+  .strengthList {
+    max-width: 480px;
+  }
+
+  .section {
+    max-width: 640px;
+  }
 }

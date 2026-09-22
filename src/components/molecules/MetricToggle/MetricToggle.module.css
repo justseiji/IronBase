@@ -1,0 +1,31 @@
+.toggle {
+  display: inline-flex;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: 3px;
+  gap: 2px;
+}
+
+.option {
+  padding: 6px 16px;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: 32px;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.option:hover {
+  color: var(--color-text);
+}
+
+.active {
+  background: rgba(238, 232, 223, 0.08);
+  color: var(--color-text);
+}

@@ -1,0 +1,52 @@
+.chart {
+  width: 100%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tooltip {
+  background: #1A1D20;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(238, 232, 223, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.tooltipDate {
+  font-size: 0.688rem;
+  color: rgba(238, 232, 223, 0.5);
+  margin-bottom: 2px;
+}
+
+.tooltipValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #EEE8DF;
+}
+
+.tooltipUnit {
+  font-weight: 400;
+  color: rgba(238, 232, 223, 0.5);
+  font-size: 0.75rem;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  color: rgba(238, 232, 223, 0.5);
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.emptyHint {
+  font-size: 0.75rem;
+  color: rgba(238, 232, 223, 0.3);
+  margin-top: 4px;
+}

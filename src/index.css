@@ -10,15 +10,20 @@
   --color-accent-dim: rgba(166, 139, 107, 0.3);
   --color-danger: #B91C1C;
   --color-text-muted: rgba(238, 232, 223, 0.5);
+  --color-positive: #4ADE80;
+  --color-negative: #F87171;
 
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
   --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
 
   --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --radius: 10px;
   --radius-sm: 6px;
+  --radius-lg: 14px;
   --transition-fast: 0.15s ease-out;
   --transition-medium: 0.3s ease-out;
 }
@@ -75,7 +80,7 @@ input, select {
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -86,10 +91,34 @@ input, select {
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

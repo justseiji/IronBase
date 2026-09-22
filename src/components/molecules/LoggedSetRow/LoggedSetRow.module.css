@@ -5,7 +5,21 @@
   padding: var(--space-2);
   background: var(--color-surface);
   border-radius: var(--radius-sm);
-  animation: slideIn 0.25s ease-out;
+  animation: slideIn 0.18s ease-out;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.row:hover {
+  background: rgba(26, 29, 32, 0.8);
+}
+
+.editing {
+  background: rgba(166, 139, 107, 0.08);
+}
+
+.deleting {
+  animation: slideOut 0.18s ease-out forwards;
 }
 
 .info {
@@ -33,10 +47,21 @@
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
   }
 }
