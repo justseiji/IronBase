@@ -17,15 +17,6 @@
   position: relative;
 }
 
-.emptyBaseline {
-  position: absolute;
-  left: 40px;
-  right: 8px;
-  top: 50%;
-  height: 1px;
-  background: rgba(238, 232, 223, 0.08);
-}
-
 .emptyText {
   font-size: 0.813rem;
   color: rgba(238, 232, 223, 0.3);

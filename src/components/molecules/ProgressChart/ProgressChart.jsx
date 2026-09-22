@@ -26,7 +26,6 @@ export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentC
     return (
       <div className={styles.chart}>
         <div className={styles.emptyChart}>
-          <div className={styles.emptyBaseline} />
           <p className={styles.emptyText}>Start logging to build your progression.</p>
         </div>
       </div>
@@ -42,11 +41,11 @@ export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentC
           <span className={styles.singleDate}>{formatDateShort(data[0].date)}</span>
         </div>
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={data} margin={{ top: 20, right: 20, bottom: 0, left: -12 }}>
+          <LineChart data={data} margin={{ top: 20, right: 20, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(238,232,223,0.06)" vertical={false} />
             <ReferenceLine y={data[0].value} stroke="rgba(238,232,223,0.06)" strokeDasharray="3 3" />
             <XAxis dataKey="date" tickFormatter={formatDateShort} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={{ stroke: 'rgba(238,232,223,0.06)' }} tickLine={false} tickMargin={8} />
-            <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} domain={[d => d * 0.9, d => d * 1.1]} />
+            <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={48} domain={[d => d * 0.9, d => d * 1.1]} />
             <Line type="monotone" dataKey="value" stroke={accentColor} strokeWidth={0} dot={{ r: 5, fill: accentColor, stroke: '#1A1D20', strokeWidth: 2 }} animationDuration={400} animationEasing="ease-out" />
           </LineChart>
         </ResponsiveContainer>
@@ -58,10 +57,10 @@ export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentC
   return (
     <div className={styles.chart}>
       <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+        <LineChart data={data} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(238,232,223,0.06)" vertical={false} />
           <XAxis dataKey="date" tickFormatter={formatDateShort} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={{ stroke: 'rgba(238,232,223,0.06)' }} tickLine={false} tickMargin={8} />
-          <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} domain={['auto', 'auto']} />
+          <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={48} domain={['auto', 'auto']} />
           <Tooltip content={<CustomTooltip unit={unit} />} cursor={{ stroke: 'rgba(238,232,223,0.1)' }} />
           <Line type="monotone" dataKey="value" stroke={accentColor} strokeWidth={2} dot={showDots ? { r: 3, fill: accentColor, stroke: accentColor } : false} activeDot={{ r: 5, fill: accentColor, stroke: '#1A1D20', strokeWidth: 2 }} animationDuration={600} animationEasing="ease-out" />
         </LineChart>
