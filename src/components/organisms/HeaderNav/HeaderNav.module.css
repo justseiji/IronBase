@@ -1,14 +1,18 @@
 .header {
-  display: none;
+  display: flex;
+  align-items: center;
+  padding: var(--space-2);
+  border-bottom: 1px solid rgba(238, 232, 223, 0.06);
+  background: var(--color-bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 @media (min-width: 768px) {
   .header {
-    display: flex;
-    align-items: center;
     padding: var(--space-2) var(--space-4);
     gap: var(--space-4);
-    border-bottom: 1px solid rgba(238, 232, 223, 0.06);
   }
 }
 
@@ -21,7 +25,13 @@
 }
 
 .nav {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
 }
