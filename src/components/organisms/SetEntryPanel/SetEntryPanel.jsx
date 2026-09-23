@@ -3,7 +3,7 @@ import SetInputRow from '../../molecules/SetInputRow/SetInputRow';
 import { cleanNumber } from '../../../utils/numbers';
 import styles from './SetEntryPanel.module.css';
 
-export default function SetEntryPanel({ exercises, selectedExerciseId, onSelectExercise, weight, onWeightChange, reps, onRepsChange, rpe, onRpeChange, onAddSet, isEditing, onCancelEdit, previousSet, comparison }) {
+export default function SetEntryPanel({ exercises, selectedExerciseId, onSelectExercise, weight, onWeightChange, reps, onRepsChange, rpe, onRpeChange, onAddSet, isEditing, onCancelEdit, previousSet, comparison, hasFormGuide, onOpenFormGuide }) {
   return (
     <div className={styles.panel}>
       <ExerciseSelector
@@ -11,6 +11,16 @@ export default function SetEntryPanel({ exercises, selectedExerciseId, onSelectE
         selectedExerciseId={selectedExerciseId}
         onSelectExercise={onSelectExercise}
       />
+
+      {hasFormGuide && selectedExerciseId && (
+        <button
+          className={styles.formGuideLink}
+          onClick={onOpenFormGuide}
+          type="button"
+        >
+          Form Guide →
+        </button>
+      )}
 
       {previousSet && (
         <div className={styles.previousSession}>

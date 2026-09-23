@@ -4,6 +4,8 @@ import WorkoutHeader from '../../components/organisms/WorkoutHeader/WorkoutHeade
 import SetEntryPanel from '../../components/organisms/SetEntryPanel/SetEntryPanel';
 import LoggedSetsList from '../../components/organisms/LoggedSetsList/LoggedSetsList';
 import WorkoutActions from '../../components/organisms/WorkoutActions/WorkoutActions';
+import FormGuide from '../../components/molecules/FormGuide/FormGuide';
+import formGuides from '../../data/formGuides';
 import { cleanNumber } from '../../utils/numbers';
 import styles from './WorkoutLogPage.module.css';
 
@@ -23,8 +25,10 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
   const [loggedSets, setLoggedSets] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [newPR, setNewPR] = useState(null);
+  const [showFormGuide, setShowFormGuide] = useState(false);
 
   const isEditing = editingIndex !== null;
+  const hasFormGuide = !!formGuides[selectedExerciseId];
 
   // Find previous session's best set for selected exercise
   const previousSet = useMemo(() => {
@@ -204,6 +208,8 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
         onCancelEdit={handleCancelEdit}
         previousSet={previousSet}
         comparison={comparison}
+        hasFormGuide={hasFormGuide}
+        onOpenFormGuide={() => setShowFormGuide(true)}
       />
 
       <div className={styles.logSection}>
@@ -216,6 +222,12 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
       </div>
 
       <WorkoutActions onSave={handleSaveWorkout} disabled={!canSave} />
+
+      <FormGuide
+        exerciseId={selectedExerciseId}
+        isOpen={showFormGuide}
+        onClose={() => setShowFormGuide(false)}
+      />
     </div>
   );
 }
