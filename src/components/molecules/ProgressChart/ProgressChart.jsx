@@ -7,6 +7,11 @@ function formatDateShort(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+/** Clean any floating-point tick value that Recharts auto-generates */
+function formatTickValue(value) {
+  return cleanNumber(value);
+}
+
 function CustomTooltip({ active, payload, label, unit }) {
   if (!active || !payload?.length) return null;
   return (
@@ -19,7 +24,10 @@ function CustomTooltip({ active, payload, label, unit }) {
   );
 }
 
-export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentColor = '#A68B6B' }) {
+export default function ProgressChart({ data: rawData, metricLabel, unit = 'lbs', accentColor = '#A68B6B' }) {
+  // Pre-clean ALL data values before they ever reach Recharts
+  const data = rawData ? rawData.map(d => ({ ...d, value: cleanNumber(d.value) })) : null;
+
   const showDots = !data || data.length <= 20;
   
   // State 0: No data — show chart skeleton with baseline
@@ -35,18 +43,19 @@ export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentC
 
   // State 1: Single data point — show dot on baseline
   if (data.length === 1) {
+    const val = data[0].value;
     return (
       <div className={styles.chart}>
         <div className={styles.singlePoint}>
-          <span className={styles.singleValue}>{cleanNumber(data[0].value)} <span className={styles.singleUnit}>{unit}</span></span>
+          <span className={styles.singleValue}>{val} <span className={styles.singleUnit}>{unit}</span></span>
           <span className={styles.singleDate}>{formatDateShort(data[0].date)}</span>
         </div>
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={data} margin={{ top: 20, right: 20, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(238,232,223,0.06)" vertical={false} />
-            <ReferenceLine y={data[0].value} stroke="rgba(238,232,223,0.06)" strokeDasharray="3 3" />
+            <ReferenceLine y={val} stroke="rgba(238,232,223,0.06)" strokeDasharray="3 3" />
             <XAxis dataKey="date" tickFormatter={formatDateShort} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={{ stroke: 'rgba(238,232,223,0.06)' }} tickLine={false} tickMargin={8} />
-            <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={48} domain={[d => d * 0.9, d => d * 1.1]} />
+            <YAxis tickFormatter={formatTickValue} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={48} domain={[d => cleanNumber(d * 0.9), d => cleanNumber(d * 1.1)]} />
             <Line type="monotone" dataKey="value" stroke={accentColor} strokeWidth={0} dot={{ r: 5, fill: accentColor, stroke: '#1A1D20', strokeWidth: 2 }} animationDuration={400} animationEasing="ease-out" />
           </LineChart>
         </ResponsiveContainer>
@@ -61,7 +70,7 @@ export default function ProgressChart({ data, metricLabel, unit = 'lbs', accentC
         <LineChart data={data} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(238,232,223,0.06)" vertical={false} />
           <XAxis dataKey="date" tickFormatter={formatDateShort} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={{ stroke: 'rgba(238,232,223,0.06)' }} tickLine={false} tickMargin={8} />
-          <YAxis tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={48} domain={['auto', 'auto']} />
+          <YAxis tickFormatter={formatTickValue} tick={{ fill: 'rgba(238,232,223,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={48} domain={['auto', 'auto']} />
           <Tooltip content={<CustomTooltip unit={unit} />} cursor={{ stroke: 'rgba(238,232,223,0.1)' }} />
           <Line type="monotone" dataKey="value" stroke={accentColor} strokeWidth={2} dot={showDots ? { r: 3, fill: accentColor, stroke: accentColor } : false} activeDot={{ r: 5, fill: accentColor, stroke: '#1A1D20', strokeWidth: 2 }} animationDuration={600} animationEasing="ease-out" />
         </LineChart>
