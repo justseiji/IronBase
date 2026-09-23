@@ -1,283 +1,272 @@
 /* ─── FormGuide Modal / Bottom Sheet ─── */
 
-/* Backdrop overlay */
+.overlayRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Backdrop */
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 300;
-  animation: backdropIn var(--transition-fast);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn var(--transition-fast);
 }
 
-/* ─── MOBILE: Bottom Sheet ─── */
-.sheet {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-height: 85vh;
+/* ─── Dialog / Container (Mobile Bottom Sheet by Default) ─── */
+.dialog {
+  position: relative;
+  width: 100%;
+  max-height: 88vh;
   background: var(--color-surface);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  z-index: 301;
+  border-top: 1px solid rgba(238, 232, 223, 0.08);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  animation: sheetSlideUp 0.2s ease-out;
+  z-index: 301;
+  outline: none;
+  animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
-/* Sheet header */
+/* Header */
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: var(--space-2) var(--space-2) var(--space-1);
+  padding: var(--space-3) var(--space-3) var(--space-2);
   flex-shrink: 0;
 }
 
-.headerLeft {
+.titleGroup {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.guideLabel {
-  font-size: 0.625rem;
+.guideKicker {
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  line-height: 1;
 }
 
 .exerciseName {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-text);
   line-height: 1.2;
+  margin: 0;
 }
 
-.closeButton {
-  width: 32px;
-  height: 32px;
+.closeIconButton {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--color-text-muted);
+  border: none;
+  cursor: pointer;
   transition: color var(--transition-fast), background var(--transition-fast);
   flex-shrink: 0;
+  margin-top: -4px;
+  margin-right: -4px;
 }
 
-.closeButton:hover {
+.closeIconButton:hover {
   color: var(--color-text);
   background: rgba(238, 232, 223, 0.06);
 }
 
-/* Sheet body — scrollable */
+.closeIconButton:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollable Content */
 .body {
   flex: 1;
   overflow-y: auto;
-  padding: 0 var(--space-2) var(--space-3);
+  padding: 0 var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   -webkit-overflow-scrolling: touch;
 }
 
-/* Stage content — mobile shows one at a time */
-.stageContent {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+/* Exercise Image */
+.imageWrapper {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-bg);
+  border: 1px solid rgba(238, 232, 223, 0.08);
 }
 
-/* Illustration container */
-.illustration {
-  max-width: 280px;
-  margin: 0 auto;
-  padding: var(--space-1) 0;
+.image {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  object-fit: cover;
+  display: block;
 }
 
-/* Stage label */
-.stageLabel {
-  font-size: 0.688rem;
-  font-weight: 700;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-/* Cue list */
-.cueList {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.cue {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--color-text);
-  line-height: 1.4;
-  padding-left: var(--space-2);
-  position: relative;
-}
-
-.cue::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 7px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--color-accent-dim);
-}
-
-/* Mobile: single stage — only show active */
-.stageCard {
-  display: none;
-}
-
-.stageCard[data-active="true"] {
+/* Key Cues */
+.cuesSection {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-/* Stage navigation — mobile */
-.stageNav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-2);
-  flex-shrink: 0;
-  border-top: 1px solid rgba(238, 232, 223, 0.06);
-}
-
-.navButton {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+.cuesHeading {
   font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text);
-  background: var(--color-primary);
-  transition: background var(--transition-fast);
-  min-width: 72px;
-  justify-content: center;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
 }
 
-.navButton:hover {
-  background: var(--color-primary-hover);
+.cueList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.navButton:disabled {
-  opacity: 0.3;
-  cursor: default;
-  pointer-events: none;
-}
-
-.stageIndicator {
-  font-size: 0.75rem;
+.cueItem {
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text-muted);
-  letter-spacing: 0.04em;
+  color: var(--color-text);
+  line-height: 1.45;
+  padding-left: var(--space-2);
+  position: relative;
 }
 
-/* Stage dots — mobile */
-.stageDots {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
+.cueItem::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: rgba(238, 232, 223, 0.15);
-  transition: background var(--transition-fast);
-}
-
-.dot.active {
   background: var(--color-accent);
 }
 
-/* ─── DESKTOP: Centered Modal ─── */
+/* Footer / Close Action */
+.footer {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  flex-shrink: 0;
+}
+
+.closeActionBtn {
+  width: 100%;
+  padding: 10px var(--space-3);
+  background: rgba(238, 232, 223, 0.06);
+  color: var(--color-text);
+  border: 1px solid rgba(238, 232, 223, 0.12);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  text-align: center;
+}
+
+.closeActionBtn:hover {
+  background: rgba(238, 232, 223, 0.12);
+  border-color: rgba(238, 232, 223, 0.2);
+}
+
+.closeActionBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Desktop Centered Modal (min-width: 640px) ─── */
 @media (min-width: 640px) {
-  .sheet {
-    position: fixed;
-    bottom: auto;
-    top: 50%;
-    left: 50%;
-    right: auto;
-    transform: translate(-50%, -50%);
-    max-width: 800px;
-    width: calc(100% - var(--space-4) * 2);
-    max-height: 80vh;
+  .overlayRoot {
+    align-items: center;
+    padding: var(--space-4);
+  }
+
+  .dialog {
+    max-width: 480px;
+    max-height: 85vh;
     border-radius: var(--radius-lg);
-    animation: modalFadeIn 0.2s ease-out;
-  }
-
-  .body {
-    padding: 0 var(--space-4) var(--space-4);
-  }
-
-  /* Desktop: show all stages horizontally */
-  .stagesGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-3);
-  }
-
-  .stageCard {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .stageCard .illustration {
-    max-width: 100%;
-  }
-
-  /* Hide mobile nav on desktop */
-  .stageNav {
-    display: none;
+    border: 1px solid rgba(238, 232, 223, 0.1);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+    animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .header {
-    padding: var(--space-3) var(--space-4) var(--space-2);
+    padding: var(--space-4) var(--space-4) var(--space-2);
   }
 
-  .cue {
-    font-size: 0.75rem;
+  .body {
+    padding: 0 var(--space-4) var(--space-2);
+    gap: var(--space-3);
+  }
+
+  .image {
+    max-height: 280px;
+  }
+
+  .footer {
+    padding: var(--space-2) var(--space-4) var(--space-4);
   }
 }
 
 /* ─── Animations ─── */
-@keyframes backdropIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes sheetSlideUp {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(24px);
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.5;
+  }
+  to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
-@keyframes modalFadeIn {
+@keyframes modalIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -48%);
+    transform: scale(0.96) translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .dialog {
+    animation: none !important;
   }
 }

@@ -1,160 +1,140 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import formGuides from '../../../data/formGuides';
-import { getIllustration } from './illustrations';
 import styles from './FormGuide.module.css';
 
 /**
- * FormGuide — contextual exercise form reference.
- * Mobile: bottom sheet with stage-by-stage navigation.
- * Desktop: centered modal showing all four stages.
+ * FormGuide — minimal visual reference for exercise technique.
+ * Shows exercise name, clean high-quality photographic reference,
+ * 3-4 concise technique cues, and close actions.
+ *
+ * Mobile: smooth bottom sheet / compact modal.
+ * Desktop: centered, restrained modal.
  */
 export default function FormGuide({ exerciseId, isOpen, onClose }) {
-  const [activeStage, setActiveStage] = useState(0);
-  const sheetRef = useRef(null);
+  const modalRef = useRef(null);
+  const closeButtonRef = useRef(null);
 
   const guide = formGuides[exerciseId];
 
-  // Reset to first stage when exercise changes or guide opens
-  useEffect(() => {
-    if (isOpen) setActiveStage(0);
-  }, [isOpen, exerciseId]);
-
-  // Close on Escape
+  // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
     function handleKeyDown(e) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+      }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Lock body scroll when open
+  // Lock body scroll while guide is open
   useEffect(() => {
     if (!isOpen) return;
-    const prev = document.body.style.overflow;
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
   }, [isOpen]);
 
-  // Focus trap — focus the sheet when it opens
+  // Auto-focus modal on open for accessibility
   useEffect(() => {
-    if (isOpen && sheetRef.current) {
-      sheetRef.current.focus();
+    if (isOpen && modalRef.current) {
+      modalRef.current.focus();
     }
   }, [isOpen]);
 
-  const handlePrev = useCallback(() => {
-    setActiveStage(s => Math.max(0, s - 1));
-  }, []);
-
-  const handleNext = useCallback(() => {
-    if (!guide) return;
-    setActiveStage(s => Math.min(guide.stages.length - 1, s + 1));
-  }, [guide]);
-
   if (!isOpen || !guide) return null;
 
-  const totalStages = guide.stages.length;
-  const currentStage = guide.stages[activeStage];
-  const Illustration = getIllustration(exerciseId, activeStage);
-
   const content = (
-    <>
+    <div className={styles.overlayRoot}>
       {/* Backdrop */}
-      <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
-
-      {/* Sheet / Modal */}
       <div
-        className={styles.sheet}
-        ref={sheetRef}
+        className={styles.backdrop}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Dialog container */}
+      <div
+        className={styles.dialog}
+        ref={modalRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`${guide.name} form guide`}
+        aria-labelledby="form-guide-heading"
         tabIndex={-1}
       >
         {/* Header */}
         <div className={styles.header}>
-          <div className={styles.headerLeft}>
-            <span className={styles.guideLabel}>Form Guide</span>
-            <span className={styles.exerciseName}>{guide.name}</span>
+          <div className={styles.titleGroup}>
+            <span className={styles.guideKicker}>Form Guide</span>
+            <h2 id="form-guide-heading" className={styles.exerciseName}>
+              {guide.name}
+            </h2>
           </div>
           <button
-            className={styles.closeButton}
+            type="button"
+            className={styles.closeIconButton}
             onClick={onClose}
-            aria-label="Close form guide"
+            aria-label={`Close ${guide.name} form guide`}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M4 4l10 10M14 4L4 14" />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        {/* Body */}
+        {/* Scrollable / Content area */}
         <div className={styles.body}>
-          {/* Mobile: single stage view */}
-          <div className={styles.stageContent}>
-            {/* On mobile, show only activeStage; on desktop, show grid */}
-            <div className={styles.stagesGrid}>
-              {guide.stages.map((stage, idx) => {
-                const StageIllustration = getIllustration(exerciseId, idx);
-                return (
-                  <div
-                    key={idx}
-                    className={styles.stageCard}
-                    style={{
-                      // On mobile, hide non-active stages via CSS media query override
-                      // We use a data attribute for mobile filtering
-                    }}
-                    data-stage={idx}
-                    data-active={idx === activeStage ? 'true' : 'false'}
-                  >
-                    <div className={styles.illustration}>
-                      {StageIllustration && <StageIllustration />}
-                    </div>
-                    <span className={styles.stageLabel}>{stage.label}</span>
-                    <ul className={styles.cueList}>
-                      {stage.cues.map((cue, ci) => (
-                        <li key={ci} className={styles.cue}>{cue}</li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Reference Image */}
+          <div className={styles.imageWrapper}>
+            <img
+              src={guide.image}
+              alt={guide.imageAlt}
+              className={styles.image}
+              loading="eager"
+            />
+          </div>
+
+          {/* Key Cues */}
+          <div className={styles.cuesSection}>
+            <h3 className={styles.cuesHeading}>Key cues</h3>
+            <ul className={styles.cueList}>
+              {guide.cues.map((cue, index) => (
+                <li key={index} className={styles.cueItem}>
+                  {cue}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* Stage Navigation — mobile only */}
-        <div className={styles.stageNav}>
+        {/* Footer */}
+        <div className={styles.footer}>
           <button
-            className={styles.navButton}
-            onClick={handlePrev}
-            disabled={activeStage === 0}
-            aria-label="Previous stage"
+            type="button"
+            ref={closeButtonRef}
+            className={styles.closeActionBtn}
+            onClick={onClose}
           >
-            ← Prev
-          </button>
-          <div className={styles.stageDots}>
-            {guide.stages.map((_, idx) => (
-              <span
-                key={idx}
-                className={`${styles.dot} ${idx === activeStage ? styles.active : ''}`}
-              />
-            ))}
-          </div>
-          <button
-            className={styles.navButton}
-            onClick={handleNext}
-            disabled={activeStage === totalStages - 1}
-            aria-label="Next stage"
-          >
-            Next →
+            Close
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 
   return createPortal(content, document.body);
