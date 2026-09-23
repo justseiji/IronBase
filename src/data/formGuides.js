@@ -39,6 +39,30 @@ const formGuides = {
       'Finish tall without excessive leaning back',
     ],
   },
+
+  'ex-4': {
+    name: 'Overhead Press',
+    image: '/images/exercises/overhead-press.jpg',
+    imageAlt: 'Proper standing barbell overhead press with vertical forearms and lockout overhead',
+    cues: [
+      'Squeeze glutes and brace your core',
+      'Keep forearms vertical under the bar',
+      'Press in a straight line overhead',
+      'Push your head through at lockout',
+    ],
+  },
+
+  'ex-5': {
+    name: 'Barbell Row',
+    image: '/images/exercises/barbell-row.jpg',
+    imageAlt: 'Proper bent-over barbell row with flat back pulling to lower ribcage',
+    cues: [
+      'Hinge at hips with a flat back',
+      'Pull the bar toward your lower ribcage',
+      'Lead with elbows and squeeze your back',
+      'Maintain torso angle without swinging',
+    ],
+  },
 };
 
 export default formGuides;
