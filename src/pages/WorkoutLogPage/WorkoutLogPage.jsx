@@ -7,6 +7,7 @@ import WorkoutActions from '../../components/organisms/WorkoutActions/WorkoutAct
 import FormGuide from '../../components/molecules/FormGuide/FormGuide';
 import formGuides from '../../data/formGuides';
 import { cleanNumber } from '../../utils/numbers';
+import { computeExercisePR, findPreviousSet, computeSetComparison } from '../../services/prService';
 import styles from './WorkoutLogPage.module.css';
 
 function getTodayString() {
@@ -32,71 +33,18 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
 
   // Find previous session's best set for selected exercise
   const previousSet = useMemo(() => {
-    if (!selectedExerciseId) return null;
-    // Get all sets for this exercise across history, grouped by date
-    const sessions = {};
-    workoutHistory.forEach(w => {
-      w.sets.forEach(s => {
-        if (s.exerciseId === selectedExerciseId) {
-          if (!sessions[w.date]) sessions[w.date] = [];
-          sessions[w.date].push(s);
-        }
-      });
-    });
-    const dates = Object.keys(sessions).sort();
-    if (dates.length === 0) return null;
-    const lastDate = dates[dates.length - 1];
-    const lastSets = sessions[lastDate];
-    // Return the heaviest set from the most recent session
-    return lastSets.reduce((best, s) => {
-      if (!best || cleanNumber(s.weight) > cleanNumber(best.weight)) return s;
-      return best;
-    }, null);
+    return findPreviousSet(workoutHistory, selectedExerciseId);
   }, [workoutHistory, selectedExerciseId]);
 
   // Compute PR for selected exercise (heaviest weight ever logged in history)
   const currentPR = useMemo(() => {
-    if (!selectedExerciseId) return 0;
-    let max = 0;
-    workoutHistory.forEach(w => {
-      w.sets.forEach(s => {
-        const wt = cleanNumber(s.weight);
-        if (s.exerciseId === selectedExerciseId && wt > max) {
-          max = wt;
-        }
-      });
-    });
-    // Also check current session logged sets
-    loggedSets.forEach(s => {
-      const wt = cleanNumber(s.weight);
-      if (s.exerciseId === selectedExerciseId && wt > max) {
-        max = wt;
-      }
-    });
-    return max;
+    return computeExercisePR(workoutHistory, selectedExerciseId, loggedSets);
   }, [workoutHistory, selectedExerciseId, loggedSets]);
 
   // Comparison text
   const comparison = useMemo(() => {
-    if (!previousSet || !weight || !selectedExerciseId) return null;
-    const w = cleanNumber(weight);
-    const r = Number(reps) || 0;
-    const prevW = cleanNumber(previousSet.weight);
-    const prevR = Number(previousSet.reps);
-    if (w <= 0) return null;
-
-    const parts = [];
-    const diff = cleanNumber(w - prevW);
-    if (diff > 0) parts.push(`+${diff} lbs from previous`);
-    else if (diff < 0) parts.push(`${diff} lbs from previous`);
-    else parts.push('Same weight');
-
-    if (r > 0 && prevR > 0) {
-      if (r > prevR) parts.push(`+${r - prevR} rep${r - prevR !== 1 ? 's' : ''}`);
-      else if (r < prevR) parts.push(`${r - prevR} rep${Math.abs(r - prevR) !== 1 ? 's' : ''}`);
-    }
-
-    return parts.join(' · ');
+    if (!selectedExerciseId) return null;
+    return computeSetComparison(previousSet, weight, reps);
   }, [previousSet, weight, reps, selectedExerciseId]);
 
   function handleAddSet() {

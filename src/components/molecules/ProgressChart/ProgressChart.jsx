@@ -1,11 +1,7 @@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
 import { cleanNumber } from '../../../utils/numbers';
+import { formatDateShort } from '../../../utils/dateFormatters';
 import styles from './ProgressChart.module.css';
-
-function formatDateShort(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 /** Clean any floating-point tick value that Recharts auto-generates */
 function formatTickValue(value) {

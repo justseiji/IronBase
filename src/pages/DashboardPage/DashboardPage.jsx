@@ -5,31 +5,10 @@ import ProgressChart from '../../components/molecules/ProgressChart/ProgressChar
 import MetricToggle from '../../components/molecules/MetricToggle/MetricToggle';
 import TrainingHeatmap from '../../components/molecules/TrainingHeatmap/TrainingHeatmap';
 import { cleanNumber } from '../../utils/numbers';
+import { formatRelativeDate, getGreeting } from '../../utils/dateFormatters';
+import { getSetsForExercise, computeSessionMetrics, computeChartData, generateProgressInsight } from '../../services/analyticsService';
+import { computePersonalRecords } from '../../services/prService';
 import styles from './DashboardPage.module.css';
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const diff = Math.floor((today - d) / 86400000);
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Yesterday';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
-}
-
-function calcE1RM(weight, reps) {
-  if (reps <= 0 || weight <= 0) return 0;
-  if (reps === 1) return weight;
-  return Math.round(weight * (1 + reps / 30));
-}
 
 const METRIC_OPTIONS = [
   { value: 'weight', label: 'Weight' },
@@ -70,30 +49,12 @@ export default function DashboardPage({ exercises, workoutHistory }) {
 
   // Chart data for selected exercise
   const chartSessionData = useMemo(() => {
-    const grouped = {};
-    workoutHistory.forEach(w => {
-      w.sets.forEach(s => {
-        if (s.exerciseId === chartExerciseId) {
-          if (!grouped[w.date]) grouped[w.date] = [];
-          grouped[w.date].push(s);
-        }
-      });
-    });
-    return Object.entries(grouped)
-      .map(([date, sets]) => {
-        const maxWeight = cleanNumber(Math.max(...sets.map(s => cleanNumber(s.weight))));
-        const totalVolume = cleanNumber(sets.reduce((sum, s) => sum + cleanNumber(s.weight) * Number(s.reps), 0));
-        const maxE1RM = cleanNumber(Math.max(...sets.map(s => calcE1RM(cleanNumber(s.weight), Number(s.reps)))));
-        return { date, maxWeight, totalVolume, maxE1RM };
-      })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    const sets = getSetsForExercise(workoutHistory, chartExerciseId);
+    return computeSessionMetrics(sets);
   }, [workoutHistory, chartExerciseId]);
 
   const chartData = useMemo(() => {
-    return chartSessionData.map(s => ({
-      date: s.date,
-      value: activeMetric === 'weight' ? s.maxWeight : activeMetric === 'volume' ? s.totalVolume : s.maxE1RM,
-    }));
+    return computeChartData(chartSessionData, activeMetric);
   }, [chartSessionData, activeMetric]);
 
   const chartUnit = activeMetric === 'volume' ? 'lbs\u00b7reps' : 'lbs';
@@ -101,18 +62,10 @@ export default function DashboardPage({ exercises, workoutHistory }) {
 
   // Training insight
   const insight = useMemo(() => {
-    if (chartSessionData.length === 0) return 'Your journey starts here. Keep logging to build your progression.';
-    if (chartSessionData.length === 1) return `You've logged your first ${chartExercise?.name || 'exercise'} session. Keep going.`;
-    const first = chartSessionData[0].maxWeight;
-    const last = chartSessionData[chartSessionData.length - 1].maxWeight;
-    const diff = cleanNumber(last - first);
-    if (last >= Math.max(...chartSessionData.map(s => s.maxWeight))) {
-      return `Your latest ${chartExercise?.name || 'exercise'} session is your strongest.`;
-    }
-    if (diff > 0) {
-      return `Your ${chartExercise?.name || 'exercise'} is up ${diff} lbs since your first session.`;
-    }
-    return `You've logged ${chartSessionData.length} ${chartExercise?.name || 'exercise'} sessions.`;
+    return generateProgressInsight(chartSessionData, chartExercise?.name, {
+      emptyMessage: 'Your journey starts here. Keep logging to build your progression.',
+      singleSuffix: ' Keep going.',
+    });
   }, [chartSessionData, chartExercise]);
 
   // Training consistency
@@ -142,23 +95,7 @@ export default function DashboardPage({ exercises, workoutHistory }) {
   }, [workoutHistory]);
 
   const personalRecords = useMemo(() => {
-    const prMap = {};
-    workoutHistory.forEach(w => {
-      w.sets.forEach(s => {
-        const wt = cleanNumber(s.weight);
-        if (!prMap[s.exerciseId] || wt > prMap[s.exerciseId].weight) {
-          prMap[s.exerciseId] = { exerciseId: s.exerciseId, weight: wt, reps: Number(s.reps), workoutId: w.id };
-        }
-      });
-    });
-    return Object.values(prMap)
-      .sort((a, b) => b.weight - a.weight)
-      .slice(0, 5)
-      .map(pr => ({
-        ...pr,
-        name: exercises.find(e => e.id === pr.exerciseId)?.name || 'Unknown',
-        isNew: pr.workoutId === mostRecentWorkoutId,
-      }));
+    return computePersonalRecords(workoutHistory, exercises, mostRecentWorkoutId);
   }, [workoutHistory, exercises, mostRecentWorkoutId]);
 
   // Recent workouts
@@ -282,7 +219,7 @@ export default function DashboardPage({ exercises, workoutHistory }) {
             {recentWorkouts.map(w => (
               <div key={w.id} className={styles.workoutEntry} onClick={() => navigate('/workout-history')} role="button" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') navigate('/workout-history'); }}>
                 <div className={styles.workoutDateCol}>
-                  <span className={styles.workoutDate}>{formatDate(w.date)}</span>
+                  <span className={styles.workoutDate}>{formatRelativeDate(w.date)}</span>
                 </div>
                 <div className={styles.workoutContent}>
                   <span className={styles.workoutFocus}>{w.sessionFocus}</span>

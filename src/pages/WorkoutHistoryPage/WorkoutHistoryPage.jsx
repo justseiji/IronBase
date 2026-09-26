@@ -4,13 +4,8 @@ import SectionHeading from '../../components/atoms/SectionHeading/SectionHeading
 import Button from '../../components/atoms/Button/Button';
 import IconButton from '../../components/atoms/IconButton/IconButton';
 import { cleanNumber } from '../../utils/numbers';
+import { formatDateFull } from '../../utils/dateFormatters';
 import styles from './WorkoutHistoryPage.module.css';
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-}
 
 export default function WorkoutHistoryPage({ exercises, workoutHistory, onDeleteWorkout }) {
   const navigate = useNavigate();
@@ -70,7 +65,7 @@ export default function WorkoutHistoryPage({ exercises, workoutHistory, onDelete
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpand(workout.id); } }}
               >
                 <div className={styles.cardInfo}>
-                  <span className={styles.cardDate}>{formatDate(workout.date)}</span>
+                  <span className={styles.cardDate}>{formatDateFull(workout.date)}</span>
                   <span className={styles.cardFocus}>{workout.sessionFocus} · {workout.sets.length} set{workout.sets.length !== 1 ? 's' : ''}</span>
                 </div>
                 <div className={styles.cardActions}>

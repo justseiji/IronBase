@@ -4,19 +4,10 @@ import ExerciseSelector from '../../components/molecules/ExerciseSelector/Exerci
 import MetricToggle from '../../components/molecules/MetricToggle/MetricToggle';
 import ProgressChart from '../../components/molecules/ProgressChart/ProgressChart';
 import { cleanNumber } from '../../utils/numbers';
+import { formatDateWithYear } from '../../utils/dateFormatters';
+import { calcE1RM } from '../../services/e1rmService';
+import { getSetsForExercise, computeSessionMetrics, computeChartData, generateProgressInsight } from '../../services/analyticsService';
 import styles from './ExerciseHistoryPage.module.css';
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function calcE1RM(weight, reps) {
-  if (reps <= 0 || weight <= 0) return 0;
-  if (reps === 1) return weight;
-  return Math.round(weight * (1 + reps / 30));
-}
 
 const METRIC_OPTIONS = [
   { value: 'weight', label: 'Weight' },
@@ -32,51 +23,25 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
 
   // Gather all sets for this exercise with date info
   const allSets = useMemo(() => {
-    const sets = [];
-    workoutHistory.forEach(w => {
-      w.sets.forEach(s => {
-        if (s.exerciseId === selectedExerciseId) {
-          sets.push({ ...s, date: w.date });
-        }
-      });
-    });
-    return sets;
+    return getSetsForExercise(workoutHistory, selectedExerciseId);
   }, [workoutHistory, selectedExerciseId]);
 
   // Group by date and compute per-session metrics
   const sessionData = useMemo(() => {
-    const grouped = {};
-    allSets.forEach(s => {
-      if (!grouped[s.date]) grouped[s.date] = [];
-      grouped[s.date].push(s);
-    });
-
-    return Object.entries(grouped)
-      .map(([date, sets]) => {
-        const maxWeight = cleanNumber(Math.max(...sets.map(s => cleanNumber(s.weight))));
-        const totalVolume = cleanNumber(sets.reduce((sum, s) => sum + cleanNumber(s.weight) * Number(s.reps), 0));
-        const maxE1RM = cleanNumber(Math.max(...sets.map(s => calcE1RM(cleanNumber(s.weight), Number(s.reps)))));
-        return { date, maxWeight, totalVolume, maxE1RM, sets };
-      })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    return computeSessionMetrics(allSets);
   }, [allSets]);
 
   // Chart data based on active metric
   const chartData = useMemo(() => {
-    return sessionData.map(s => ({
-      date: s.date,
-      value: activeMetric === 'weight' ? s.maxWeight
-           : activeMetric === 'volume' ? s.totalVolume
-           : s.maxE1RM,
-    }));
+    return computeChartData(sessionData, activeMetric);
   }, [sessionData, activeMetric]);
 
   const chartUnit = activeMetric === 'volume' ? 'lbs·reps' : 'lbs';
 
   // Best set overall
   const bestSet = useMemo(() => {
-    const allSets = sessionData.flatMap(s => s.sets);
-    return allSets.reduce((best, s) => {
+    const flatSets = sessionData.flatMap(s => s.sets);
+    return flatSets.reduce((best, s) => {
       if (!best || cleanNumber(s.weight) > cleanNumber(best.weight)) return s;
       return best;
     }, null);
@@ -100,16 +65,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
   const hasData = allSets.length > 0;
 
   const insight = useMemo(() => {
-    if (sessionData.length === 0) return 'Start logging to build your progression history.';
-    if (sessionData.length === 1) return `You've logged your first ${selectedExercise?.name || 'exercise'} session.`;
-    const first = sessionData[0].maxWeight;
-    const last = sessionData[sessionData.length - 1].maxWeight;
-    const diff = cleanNumber(last - first);
-    if (last >= Math.max(...sessionData.map(s => s.maxWeight))) {
-      return `Your latest ${selectedExercise?.name} session is your strongest.`;
-    }
-    if (diff > 0) return `Your ${selectedExercise?.name} is up ${diff} lbs since your first session.`;
-    return `You've logged ${sessionData.length} ${selectedExercise?.name} sessions.`;
+    return generateProgressInsight(sessionData, selectedExercise?.name);
   }, [sessionData, selectedExercise]);
 
   return (
@@ -225,7 +181,7 @@ export default function ExerciseHistoryPage({ exercises = [], workoutHistory = [
             <span className={styles.historyTitle}>Session History</span>
             {[...sessionData].reverse().map(session => (
               <div key={session.date} className={styles.dateGroup}>
-                <div className={styles.dateLabel}>{formatDate(session.date)}</div>
+                <div className={styles.dateLabel}>{formatDateWithYear(session.date)}</div>
                 {session.sets.map((s, i) => (
                   <div key={i} className={styles.setRow}>
                     {cleanNumber(s.weight)} lbs × {cleanNumber(s.reps)} reps{s.rpe ? ` @ RPE ${cleanNumber(s.rpe)}` : ''}
