@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WorkoutHeader from '../../components/organisms/WorkoutHeader/WorkoutHeader';
 import SetEntryPanel from '../../components/organisms/SetEntryPanel/SetEntryPanel';
@@ -14,19 +14,40 @@ function getTodayString() {
   return new Date().toISOString().split('T')[0];
 }
 
+const DRAFT_KEY = 'ironbase-workout-draft';
+
+function getInitialDraft(key, fallback) {
+  try {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed[key] !== undefined) return parsed[key];
+    }
+  } catch (err) {
+    console.error('Failed to parse draft from localStorage', err);
+  }
+  return fallback;
+}
+
 export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveWorkout }) {
   const navigate = useNavigate();
 
-  const [date, setDate] = useState(getTodayString());
-  const [sessionFocus, setSessionFocus] = useState('');
-  const [selectedExerciseId, setSelectedExerciseId] = useState('');
-  const [weight, setWeight] = useState('');
-  const [reps, setReps] = useState('');
-  const [rpe, setRpe] = useState('');
-  const [loggedSets, setLoggedSets] = useState([]);
+  const [date, setDate] = useState(() => getInitialDraft('date', getTodayString()));
+  const [sessionFocus, setSessionFocus] = useState(() => getInitialDraft('sessionFocus', ''));
+  const [selectedExerciseId, setSelectedExerciseId] = useState(() => getInitialDraft('selectedExerciseId', ''));
+  const [weight, setWeight] = useState(() => getInitialDraft('weight', ''));
+  const [reps, setReps] = useState(() => getInitialDraft('reps', ''));
+  const [rpe, setRpe] = useState(() => getInitialDraft('rpe', ''));
+  const [loggedSets, setLoggedSets] = useState(() => getInitialDraft('loggedSets', []));
   const [editingIndex, setEditingIndex] = useState(null);
   const [newPR, setNewPR] = useState(null);
   const [showFormGuide, setShowFormGuide] = useState(false);
+
+  // Persist draft on every change
+  useEffect(() => {
+    const draft = { date, sessionFocus, selectedExerciseId, weight, reps, rpe, loggedSets };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  }, [date, sessionFocus, selectedExerciseId, weight, reps, rpe, loggedSets]);
 
   const isEditing = editingIndex !== null;
   const hasFormGuide = !!formGuides[selectedExerciseId];
@@ -119,6 +140,7 @@ export default function WorkoutLogPage({ exercises, workoutHistory = [], onSaveW
     };
 
     onSaveWorkout(workout);
+    localStorage.removeItem(DRAFT_KEY);
     navigate('/');
   }
 
