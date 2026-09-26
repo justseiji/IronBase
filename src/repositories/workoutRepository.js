@@ -86,6 +86,14 @@ export async function createWorkout(workout) {
         [setId, workout.id, set.exerciseId, set.weight, set.reps, set.rpe || null, i]
       );
     }
+
+    // Queue sync operation
+    const syncId = crypto && crypto.randomUUID ? crypto.randomUUID() : `sync-${Date.now()}-${Math.random()}`;
+    await tx.query(
+      `INSERT INTO sync_queue (id, entity_type, entity_id, operation, payload, status)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [syncId, 'workout', workout.id, 'UPSERT', JSON.stringify(workout), 'pending']
+    );
   });
 }
 
@@ -106,6 +114,14 @@ export async function deleteWorkout(id) {
     await tx.query(
       'UPDATE logged_sets SET deleted_at = NOW(), updated_at = NOW() WHERE workout_id = $1',
       [id]
+    );
+
+    // Queue sync operation
+    const syncId = crypto && crypto.randomUUID ? crypto.randomUUID() : `sync-${Date.now()}-${Math.random()}`;
+    await tx.query(
+      `INSERT INTO sync_queue (id, entity_type, entity_id, operation, payload, status)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [syncId, 'workout', id, 'DELETE', null, 'pending']
     );
   });
 }

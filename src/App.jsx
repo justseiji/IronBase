@@ -8,6 +8,7 @@ import WorkoutHistoryPage from './pages/WorkoutHistoryPage/WorkoutHistoryPage';
 import { getExercises } from './repositories/exerciseRepository';
 import { getWorkouts, createWorkout, deleteWorkout } from './repositories/workoutRepository';
 import { migrateLocalStorageToPGlite } from './database/migrateLocalStorage';
+import { startSyncEngine } from './services/syncEngine';
 
 export default function App() {
   const [exercises, setExercises] = useState([]);
@@ -31,6 +32,7 @@ export default function App() {
         console.error('[IronBase] Failed to load data from PGlite:', err);
       } finally {
         setIsLoaded(true);
+        startSyncEngine();
       }
     }
     loadData();
