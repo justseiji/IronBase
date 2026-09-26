@@ -36,6 +36,22 @@ export default function App() {
       }
     }
     loadData();
+
+    const handleDataUpdate = async () => {
+      try {
+        const dbExercises = await getExercises();
+        const dbWorkouts = await getWorkouts();
+        setExercises(dbExercises);
+        setWorkoutHistory(dbWorkouts);
+      } catch (err) {
+        console.error('[IronBase] Failed to reload data on sync:', err);
+      }
+    };
+    
+    window.addEventListener('ironbase-data-updated', handleDataUpdate);
+    return () => {
+      window.removeEventListener('ironbase-data-updated', handleDataUpdate);
+    };
   }, []);
 
   async function handleSaveWorkout(workout) {
