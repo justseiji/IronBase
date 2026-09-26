@@ -1,15 +1,26 @@
-import { loadIronBaseData, saveIronBaseData } from '../utils/storage.js';
 import { getDb } from './db.js';
+
+const LEGACY_STORAGE_KEY = 'ironbase-data';
 
 /**
  * Migrates existing data from localStorage into PGlite.
- * Ensures data is only migrated once by checking a flag in localStorage.
+ * Deletes the legacy localStorage key upon successful migration.
  */
 export async function migrateLocalStorageToPGlite() {
-  const data = loadIronBaseData();
-  
-  // If already migrated or no data to migrate, skip
-  if (!data || data.migratedToPGlite) {
+  const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!raw) return;
+
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (err) {
+    console.error('[IronBase] Failed to parse legacy localStorage data', err);
+    return;
+  }
+
+  // If already migrated or invalid shape, just remove it
+  if (!data || data.migratedToPGlite || !Array.isArray(data.workoutHistory)) {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     return;
   }
 
@@ -57,8 +68,7 @@ export async function migrateLocalStorageToPGlite() {
     }
   });
 
-  // Mark as migrated
-  data.migratedToPGlite = true;
-  saveIronBaseData(data);
+  // Clean up obsolete localStorage to free space
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
   console.log('[IronBase] Migration from localStorage to PGlite complete.');
 }
