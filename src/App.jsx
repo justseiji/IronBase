@@ -5,39 +5,55 @@ import DashboardPage from './pages/DashboardPage/DashboardPage';
 import WorkoutLogPage from './pages/WorkoutLogPage/WorkoutLogPage';
 import ExerciseHistoryPage from './pages/ExerciseHistoryPage/ExerciseHistoryPage';
 import WorkoutHistoryPage from './pages/WorkoutHistoryPage/WorkoutHistoryPage';
-import { loadIronBaseData, saveIronBaseData } from './utils/storage';
-import defaultExercises from './data/defaultExercises';
+import { getExercises } from './repositories/exerciseRepository';
+import { getWorkouts, createWorkout, deleteWorkout } from './repositories/workoutRepository';
+import { migrateLocalStorageToPGlite } from './database/migrateLocalStorage';
 
 export default function App() {
   const [exercises, setExercises] = useState([]);
   const [workoutHistory, setWorkoutHistory] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load persisted data on mount
+  // Load from PGlite on mount
   useEffect(() => {
-    const saved = loadIronBaseData();
-    if (saved) {
-      setExercises(saved.exercises);
-      setWorkoutHistory(saved.workoutHistory);
-    } else {
-      setExercises(defaultExercises);
-      setWorkoutHistory([]);
+    async function loadData() {
+      try {
+        // Run migration from localStorage to PGlite (idempotent)
+        await migrateLocalStorageToPGlite();
+        
+        // Fetch primary data from PGlite repositories
+        const dbExercises = await getExercises();
+        const dbWorkouts = await getWorkouts();
+        
+        setExercises(dbExercises);
+        setWorkoutHistory(dbWorkouts);
+      } catch (err) {
+        console.error('[IronBase] Failed to load data from PGlite:', err);
+      } finally {
+        setIsLoaded(true);
+      }
     }
-    setIsLoaded(true);
+    loadData();
   }, []);
 
-  // Persist whenever exercises or workoutHistory change (after initial load)
-  useEffect(() => {
-    if (!isLoaded) return;
-    saveIronBaseData({ exercises, workoutHistory });
-  }, [exercises, workoutHistory, isLoaded]);
-
-  function handleSaveWorkout(workout) {
-    setWorkoutHistory(prev => [...prev, workout]);
+  async function handleSaveWorkout(workout) {
+    try {
+      await createWorkout(workout);
+      const dbWorkouts = await getWorkouts();
+      setWorkoutHistory(dbWorkouts);
+    } catch (err) {
+      console.error('[IronBase] Failed to save workout:', err);
+    }
   }
 
-  function handleDeleteWorkout(workoutId) {
-    setWorkoutHistory(prev => prev.filter(w => w.id !== workoutId));
+  async function handleDeleteWorkout(workoutId) {
+    try {
+      await deleteWorkout(workoutId);
+      const dbWorkouts = await getWorkouts();
+      setWorkoutHistory(dbWorkouts);
+    } catch (err) {
+      console.error('[IronBase] Failed to delete workout:', err);
+    }
   }
 
   // Don't render until data is loaded to prevent flash of empty state

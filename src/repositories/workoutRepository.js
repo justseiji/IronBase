@@ -79,7 +79,7 @@ export async function createWorkout(workout) {
     // Insert sets
     for (let i = 0; i < workout.sets.length; i++) {
       const set = workout.sets[i];
-      const setId = set.id || (crypto && crypto.randomUUID ? crypto.randomUUID() : \`set-\${Date.now()}-\${Math.random()}\`);
+      const setId = set.id || (crypto && crypto.randomUUID ? crypto.randomUUID() : `set-${Date.now()}-${Math.random()}`);
       await tx.query(
         `INSERT INTO logged_sets (id, workout_id, exercise_id, weight, reps, rpe, set_order)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
