@@ -1,10 +1,11 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export class ApiError extends Error {
-  constructor(message, { status = 0, field = null, network = false } = {}) {
+  constructor(message, { status = 0, field = null, code = null, network = false } = {}) {
     super(message);
     this.status = status;
     this.field = field;
+    this.code = code;
     this.network = network;
   }
 }
@@ -38,7 +39,7 @@ export async function apiRequest(path, { method = 'GET', body } = {}) {
   if (!res.ok) {
     if (res.status >= 500 && !data) throw new ApiError(NETWORK_MESSAGE, { status: res.status, network: true });
     const message = res.status >= 500 ? 'Something went wrong. Please try again.' : data?.error || 'Request failed.';
-    throw new ApiError(message, { status: res.status, field: data?.field ?? null });
+    throw new ApiError(message, { status: res.status, field: data?.field ?? null, code: data?.code ?? null });
   }
   return data;
 }

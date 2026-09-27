@@ -126,6 +126,8 @@ export default function App() {
   }
 
   if (location.pathname === '/auth') {
+    // A password reset link still opens on a device that's already signed in.
+    if (location.hash.startsWith('#reset=')) return <AuthPage />;
     return <Navigate to={location.state?.from || '/'} replace />;
   }
 

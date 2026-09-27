@@ -126,6 +126,11 @@
   line-height: 1.04;
 }
 
+/* Focus lands on the title when a state has no fields; it's a reading position, not a control. */
+.title:focus {
+  outline: none;
+}
+
 .titleLine {
   display: block;
   animation: ib-slide-up var(--motion-slow) var(--ease-emphasized) both;
@@ -343,6 +348,44 @@
   color: var(--color-danger-text);
   padding: 0 4px var(--space-2);
   animation: shake 360ms var(--ease-standard), ib-fade-in var(--motion-fast) var(--ease-standard);
+}
+
+.formInfo {
+  font-size: 0.813rem;
+  line-height: 1.45;
+  color: var(--color-accent);
+  padding: 0 4px var(--space-2);
+  animation: ib-slide-up var(--motion-normal) var(--ease-emphasized) both;
+}
+
+/* The address moves to a new line as a whole, and only breaks internally if it's wider than the column. */
+.sentEmail {
+  display: inline-block;
+  max-width: 100%;
+  color: var(--color-text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.forgotLink {
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.forgotLink:hover,
+.forgotLink:focus-visible {
+  color: var(--color-accent);
 }
 
 @keyframes shake {

@@ -47,6 +47,16 @@ export async function signIn({ identifier, password }) {
   return user;
 }
 
+export async function requestPasswordReset(email) {
+  await apiRequest('/auth/forgot', { method: 'POST', body: { email } });
+}
+
+/** Sets a new password from an emailed reset link and signs this device in. */
+export async function resetPassword({ token, password }) {
+  const { user } = await apiRequest('/auth/reset', { method: 'POST', body: { token, password } });
+  return user;
+}
+
 /**
  * @returns {Promise<object|null>} The session's user, or null when there is no valid session.
  * Throws an ApiError with `network: true` when the server can't be reached.

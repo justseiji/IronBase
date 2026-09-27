@@ -78,6 +78,16 @@ export async function initDb() {
         expires_at TIMESTAMPTZ NOT NULL
       );
       CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id);
+
+      -- Password reset links (single use; only a SHA-256 of the token is stored)
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        token_hash TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        expires_at TIMESTAMPTZ NOT NULL,
+        used_at TIMESTAMPTZ
+      );
+      CREATE INDEX IF NOT EXISTS password_reset_tokens_user_id_idx ON password_reset_tokens(user_id);
       CREATE INDEX IF NOT EXISTS workouts_user_id_idx ON workouts(user_id);
     `);
 

@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { promisify } from 'node:util';
 import { Router } from 'express';
 import pool from './db.js';
+import { passwordResetLink, sendPasswordResetEmail } from './mailer.js';
 
 const scrypt = promisify(crypto.scrypt);
 
@@ -151,9 +152,31 @@ function rateLimit(req, res, next) {
   next();
 }
 
+// Reset requests always succeed from the client's point of view, so every
+// request counts here rather than only failures.
+const RESET_REQUESTS_PER_WINDOW = 10;
+const resetRequests = new Map();
+
+function resetRequestLimit(req, res, next) {
+  const key = req.ip;
+  const now = Date.now();
+  const entry = resetRequests.get(key);
+  if (!entry || entry.resetAt < now) {
+    resetRequests.set(key, { count: 1, resetAt: now + ATTEMPT_WINDOW_MS });
+    return next();
+  }
+  if (entry.count >= RESET_REQUESTS_PER_WINDOW) {
+    return res.status(429).json({ error: 'Too many requests. Try again in a few minutes.' });
+  }
+  entry.count++;
+  next();
+}
+
 setInterval(() => {
   const now = Date.now();
-  for (const [key, entry] of attempts) if (entry.resetAt < now) attempts.delete(key);
+  for (const map of [attempts, resetRequests]) {
+    for (const [key, entry] of map) if (entry.resetAt < now) map.delete(key);
+  }
 }, ATTEMPT_WINDOW_MS).unref();
 
 // ─── Routes ───
@@ -249,6 +272,93 @@ authRouter.post('/signout', async (req, res, next) => {
     res.json({ success: true });
   } catch (err) {
     next(err);
+  }
+});
+
+// ─── Password reset ───
+
+const RESET_TTL_MS = 30 * 60 * 1000;
+const RESET_EMAILS_PER_HOUR = 3;
+const INVALID_RESET_LINK = 'This reset link is invalid or has expired.';
+
+async function issuePasswordReset(email) {
+  const result = await pool.query('SELECT id, email FROM users WHERE lower(email) = $1', [email]);
+  const user = result.rows[0];
+  if (!user) return;
+
+  const recent = await pool.query(
+    `SELECT count(*)::int AS n FROM password_reset_tokens WHERE user_id = $1 AND created_at > NOW() - interval '1 hour'`,
+    [user.id]
+  );
+  if (recent.rows[0].n >= RESET_EMAILS_PER_HOUR) return;
+
+  const token = crypto.randomBytes(32).toString('base64url');
+  // A new link replaces any earlier one that hasn't been used.
+  await pool.query('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL', [user.id]);
+  await pool.query(
+    'INSERT INTO password_reset_tokens (token_hash, user_id, expires_at) VALUES ($1, $2, $3)',
+    [hashToken(token), user.id, new Date(Date.now() + RESET_TTL_MS)]
+  );
+  await sendPasswordResetEmail(user.email, passwordResetLink(token));
+}
+
+authRouter.post('/forgot', requireJson, resetRequestLimit, (req, res) => {
+  const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  if (!EMAIL_RE.test(email) || email.length > 254) {
+    return res.status(400).json({ error: 'Enter a valid email address.', field: 'email' });
+  }
+
+  // Respond before looking anything up, so neither the answer nor its timing
+  // reveals whether the email belongs to an account.
+  res.json({ ok: true });
+  issuePasswordReset(email).catch(err => {
+    console.error('[IronBase API] Password reset email failed:', err.message);
+  });
+});
+
+authRouter.post('/reset', requireJson, rateLimit, async (req, res, next) => {
+  const token = typeof req.body.token === 'string' ? req.body.token : '';
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
+
+  if (!token) return res.status(400).json({ error: INVALID_RESET_LINK, code: 'invalid_token' });
+  if (password.length < PASSWORD_MIN || password.length > PASSWORD_MAX) {
+    return res.status(400).json({ error: `Password must be at least ${PASSWORD_MIN} characters.`, field: 'password' });
+  }
+
+  let client;
+  try {
+    const passwordHash = await hashPassword(password);
+    client = await pool.connect();
+    await client.query('BEGIN');
+
+    const claimed = await client.query(
+      `UPDATE password_reset_tokens SET used_at = NOW()
+       WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()
+       RETURNING user_id`,
+      [hashToken(token)]
+    );
+    if (claimed.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: INVALID_RESET_LINK, code: 'invalid_token' });
+    }
+
+    const userId = claimed.rows[0].user_id;
+    const updated = await client.query(
+      'UPDATE users SET password_hash = $2, updated_at = NOW() WHERE id = $1 RETURNING id, email, username',
+      [userId, passwordHash]
+    );
+    await client.query('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL', [userId]);
+    // Anyone holding the old password is signed out everywhere.
+    await client.query('DELETE FROM sessions WHERE user_id = $1', [userId]);
+    await client.query('COMMIT');
+
+    await createSession(req, res, userId);
+    res.json({ user: publicUser(updated.rows[0]) });
+  } catch (err) {
+    if (client) await client.query('ROLLBACK').catch(() => {});
+    next(err);
+  } finally {
+    client?.release();
   }
 });
 

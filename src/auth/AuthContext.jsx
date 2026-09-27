@@ -2,8 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AuthContext } from './useAuth';
 import {
   getStoredAccount, storeAccount, clearStoredAccount,
-  signIn as apiSignIn, signUp as apiSignUp, fetchCurrentUser, endServerSession,
+  signIn as apiSignIn, signUp as apiSignUp, resetPassword as apiResetPassword,
+  fetchCurrentUser, endServerSession,
 } from '../services/authService';
+
+const AUTHENTICATORS = { signUp: apiSignUp, signIn: apiSignIn, reset: apiResetPassword };
 import { stopSyncEngine, syncNow } from '../services/syncEngine';
 import { closeDb, deleteUserDb } from '../database/db';
 import { getUnsyncedCount } from '../repositories/workoutRepository';
@@ -93,7 +96,7 @@ export function AuthProvider({ children }) {
 
   /** Authenticate with the server. Resolves with the user; call `enter` to open the app. */
   const authenticate = useCallback(async (mode, fields) => {
-    const user = mode === 'signUp' ? await apiSignUp(fields) : await apiSignIn(fields);
+    const user = await AUTHENTICATORS[mode](fields);
     writeFlag(PENDING_SIGNOUT_KEY, false);
     storeAccount(user);
     return user;
