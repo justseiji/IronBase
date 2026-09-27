@@ -1,3 +1,4 @@
+[![Made with AI](https://img.shields.io/badge/Made_with-AI_assistance-blue)](AI-USAGE.md)
 # IronBase
 
 ## 1. Overview
