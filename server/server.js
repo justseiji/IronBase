@@ -6,7 +6,10 @@ import { authRouter, requireAuth } from './auth.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
+// Env vars are strings, and Express reads a string as a list of trusted
+// addresses rather than a hop count, so digits must become a number.
+const trustProxy = process.env.TRUST_PROXY;
+if (trustProxy) app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy);
 
 // The web client reaches the API through a same-origin proxy, so CORS is only
 // needed when an explicit cross-origin client is configured.
@@ -18,20 +21,6 @@ if (allowedOrigins.length > 0) {
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/auth', authRouter);
-
-// TEMPORARY: reports how the caller's address arrives through the proxies, to
-// set TRUST_PROXY correctly. Remove once that's done.
-app.get('/api/debug/ip', (req, res) => {
-  res.json({
-    ip: req.ip,
-    ips: req.ips,
-    socket: req.socket.remoteAddress,
-    trustProxy: app.get('trust proxy'),
-    forwardedFor: req.headers['x-forwarded-for'] ?? null,
-    realIp: req.headers['x-real-ip'] ?? null,
-    vercelForwardedFor: req.headers['x-vercel-forwarded-for'] ?? null,
-  });
-});
 
 // Validation middleware
 function validateWorkout(req, res, next) {
