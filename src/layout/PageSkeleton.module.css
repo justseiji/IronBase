@@ -1,0 +1,33 @@
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 720px;
+  animation: ib-fade-in var(--motion-slow) var(--ease-standard) 120ms both;
+}
+
+.message {
+  font-size: 0.813rem;
+  color: var(--color-accent);
+  animation: ib-pulse 1.8s var(--ease-standard) infinite;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.error {
+  padding: var(--space-6) 0;
+  max-width: 40ch;
+  color: var(--color-text-muted);
+  font-size: 0.938rem;
+  line-height: 1.5;
+}

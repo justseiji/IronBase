@@ -1,37 +1,119 @@
 .header {
-  display: flex;
-  align-items: center;
-  padding: var(--space-2);
-  border-bottom: 1px solid rgba(238, 232, 223, 0.06);
-  background: var(--color-bg);
   position: sticky;
   top: 0;
   z-index: 50;
+  padding-top: env(safe-area-inset-top);
+  background: rgba(15, 17, 19, 0.78);
+  backdrop-filter: saturate(160%) blur(18px);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border-bottom: 1px solid var(--color-hairline);
 }
 
-@media (min-width: 768px) {
-  .header {
-    padding: var(--space-2) var(--space-4);
-    gap: var(--space-4);
-  }
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 1120px;
+  margin: 0 auto;
+  min-height: 60px;
+  padding: 0 var(--space-2);
 }
 
 .brand {
-  font-size: 1.125rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 1.063rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-text);
   white-space: nowrap;
+  border-radius: var(--radius-sm);
+}
+
+.mark {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 55%), var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(238, 232, 223, 0.08) inset;
+  transition: transform var(--motion-normal) var(--ease-emphasized);
+}
+
+.mark::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--color-text);
+  box-shadow: -3px 0 0 0 var(--color-text), 3px 0 0 0 var(--color-text);
+  opacity: 0.9;
+}
+
+.brand:hover .mark {
+  transform: rotate(-8deg);
 }
 
 .nav {
   display: none;
 }
 
+.status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 @media (min-width: 768px) {
+  .inner {
+    padding: 0 var(--space-4);
+    gap: var(--space-4);
+  }
+
   .nav {
+    position: relative;
     display: flex;
     align-items: center;
+    gap: 2px;
+  }
+
+  .indicator {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 36px;
+    margin-top: -18px;
+    border-radius: var(--radius-pill);
+    background: rgba(238, 232, 223, 0.07);
+    pointer-events: none;
+  }
+
+  .animated {
+    transition:
+      transform var(--motion-slow) var(--ease-emphasized),
+      width var(--motion-slow) var(--ease-emphasized);
+    pointer-events: none;
+  }
+
+  .status {
+    gap: var(--space-2);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .inner {
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+  }
+
+  .status {
     gap: var(--space-1);
   }
 }

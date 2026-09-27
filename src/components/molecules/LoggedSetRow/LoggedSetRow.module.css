@@ -1,67 +1,117 @@
+/* The outer grid collapses to zero height on removal so the list closes smoothly. */
+.item {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 260ms var(--ease-emphasized), opacity 180ms var(--ease-exit);
+  animation: set-in var(--motion-slow) var(--ease-emphasized) backwards;
+}
+
+.item + .item .row {
+  border-top: 1px solid var(--color-hairline);
+}
+
+@keyframes set-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.exiting {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.exiting .row {
+  transform: translateX(-12px);
+}
+
+.collapse {
+  min-height: 0;
+  overflow: hidden;
+  overflow: clip;
+  padding-right: 4px;
+}
+
 .row {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-2);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  animation: slideIn 0.18s ease-out;
-  transition: background var(--transition-fast), opacity var(--transition-fast);
-  -webkit-tap-highlight-color: transparent;
+  gap: 14px;
+  padding: 10px 0;
+  transition: transform 260ms var(--ease-emphasized), background-color var(--motion-normal) var(--ease-standard);
 }
 
-.row:hover {
-  background: rgba(26, 29, 32, 0.8);
+.flash {
+  position: absolute;
+  inset: 2px 0;
+  border-radius: var(--radius);
+  pointer-events: none;
+  animation: ib-flash 900ms var(--ease-standard) forwards;
 }
 
-.editing {
-  background: rgba(166, 139, 107, 0.08);
+.number {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  background: rgba(238, 232, 223, 0.06);
+  transition: background-color var(--motion-normal) var(--ease-standard), color var(--motion-normal) var(--ease-standard);
 }
 
-.deleting {
-  animation: slideOut 0.18s ease-out forwards;
+.editing .number {
+  color: var(--color-bg);
+  background: var(--color-accent);
 }
 
 .info {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .exercise {
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.938rem;
   color: var(--color-text);
 }
 
 .details {
-  font-size: 0.813rem;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 4px;
+  font-size: 0.875rem;
   color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.details strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.rpe {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 
 .actions {
   display: flex;
-  gap: 0;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
+.delete:hover {
+  color: var(--color-danger-text);
 }

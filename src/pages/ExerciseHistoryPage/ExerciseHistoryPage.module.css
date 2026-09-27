@@ -1,278 +1,359 @@
 .page {
-  animation: fadeSlideUp 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 760px;
 }
 
-.selectorSection {
-  margin-bottom: var(--space-4);
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-/* Exercise Header */
-.exerciseHeader {
-  margin-bottom: var(--space-4);
+.kicker,
+.sectionLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.titleBlock {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  animation: ib-slide-up var(--motion-slow) var(--ease-emphasized) both;
 }
 
 .exerciseName {
-  font-size: 2rem;
+  font-size: clamp(2.25rem, 10vw, 3rem);
   font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin-bottom: var(--space-1);
+  letter-spacing: -0.04em;
+  line-height: 1.02;
 }
 
 .exerciseStats {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: center;
+  gap: 4px var(--space-2);
+  align-items: baseline;
 }
 
 .bestSetLabel {
-  font-size: 0.875rem;
+  font-size: 0.938rem;
   color: var(--color-text-muted);
-  font-weight: 500;
 }
 
-.e1rmBadge {
-  font-size: 0.75rem;
-  color: var(--color-accent);
-  font-weight: 500;
-  background: rgba(166, 139, 107, 0.1);
-  padding: 2px 10px;
-  border-radius: 100px;
+.bestSetLabel strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.progressUp,
+.progressDown {
+  font-size: 0.813rem;
+  font-weight: 600;
 }
 
 .progressUp {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #4ADE80;
+  color: var(--color-positive);
 }
 
 .progressDown {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #F87171;
+  color: var(--color-negative);
 }
 
-/* Chart Section */
-.chartSection {
-  margin-bottom: var(--space-4);
+/* ─── Sections ─── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.chartHeader {
+.sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+  gap: var(--space-1);
 }
 
-.chartLabel {
-  font-size: 0.75rem;
+.chartHeadline {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.chartValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.chartUnit,
+.chartCaption {
+  font-size: 0.813rem;
   font-weight: 500;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
 }
 
-/* e1RM Card */
-.e1rmCard {
-  background: var(--color-surface);
-  border-radius: var(--radius);
-  padding: var(--space-3);
-  margin-bottom: var(--space-4);
+.insight {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  animation: ib-fade-in var(--motion-slow) var(--ease-standard) both;
 }
 
-.e1rmLabel {
+/* ─── Comparison ─── */
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.compareCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compareCol + .compareCol {
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--color-hairline);
+}
+
+.compareDate {
   font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-1);
+  color: var(--color-text-muted);
 }
 
-.e1rmValue {
-  font-size: 2rem;
+.compareValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.compareValue small {
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.compareMuted {
+  color: var(--color-text-muted);
+}
+
+.deltaRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-hairline);
+}
+
+.deltaRow dt,
+.prCell dt {
+  font-size: 0.688rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.deltaRow dd {
+  font-size: 0.938rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.deltaUp {
+  color: var(--color-positive);
+}
+
+.deltaDown {
+  color: var(--color-negative);
+}
+
+.deltaSame {
+  color: var(--color-text-muted);
+}
+
+/* ─── Records ─── */
+
+.prGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.prCell {
+  padding: 4px 0;
+  min-width: 0;
+}
+
+.prCell + .prCell {
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--color-hairline);
+}
+
+.prCell dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 4px;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-.e1rmUnit {
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--color-text-muted);
-}
-
-.e1rmSub {
-  font-size: 0.688rem;
-  color: var(--color-text-muted);
-  margin-top: 4px;
-}
-
-/* Personal Records */
-.prSection {
-  margin-bottom: var(--space-4);
-}
-
-.prTitle {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  display: block;
-  margin-bottom: var(--space-2);
-}
-
-.prGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.prCard {
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.prLabel {
-  font-size: 0.688rem;
-  color: var(--color-text-muted);
-  font-weight: 500;
-}
-
-.prValue {
-  font-size: 1.125rem;
-  font-weight: 700;
-}
-
 .prUnit {
   font-size: 0.688rem;
-  font-weight: 400;
+  font-weight: 500;
+  letter-spacing: 0;
   color: var(--color-text-muted);
 }
 
-/* Session History */
-.historySection {
-  margin-top: var(--space-2);
+.footnote {
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
 }
 
-.historyTitle {
+/* ─── Session history ─── */
+
+.sessions {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.session {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 0;
+}
+
+.session + .session {
+  border-top: 1px solid var(--color-hairline);
+}
+
+.sessionHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.sessionDate {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sessionVolume {
+  margin-left: auto;
   font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.prBadge,
+.firstBadge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+}
+
+.prBadge {
+  color: var(--color-bg);
+  background: var(--color-accent);
+  box-shadow: 0 0 12px -2px rgba(166, 139, 107, 0.6);
+}
+
+.firstBadge {
+  color: var(--color-text-muted);
+  background: rgba(238, 232, 223, 0.06);
+}
+
+.setChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.setChip {
+  display: inline-flex;
+  align-items: baseline;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.813rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  background: rgba(238, 232, 223, 0.045);
+}
+
+.setChipTop {
+  color: var(--color-text);
+  background: rgba(238, 232, 223, 0.09);
+}
+
+.times {
+  margin: 0 2px;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.chipRpe {
+  margin-left: 5px;
+  font-size: 0.688rem;
   font-weight: 500;
   color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  display: block;
-  margin-bottom: var(--space-2);
 }
 
-.dateGroup {
-  margin-bottom: var(--space-3);
-}
+/* ─── Empty ─── */
 
-.dateLabel {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  font-weight: 500;
-  margin-bottom: var(--space-1);
-}
-
-.setRow {
-  padding: var(--space-1) var(--space-2);
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  border-left: 2px solid rgba(238, 232, 223, 0.06);
-  margin-bottom: 2px;
-  margin-left: var(--space-1);
-}
-
-/* Empty State */
 .emptyState {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-6) var(--space-2);
-  text-align: center;
-}
-
-.emptyIcon {
-  margin-bottom: var(--space-2);
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, rgba(166, 139, 107, 0.08), transparent 70%);
+  box-shadow: 0 0 0 1px var(--color-hairline) inset;
 }
 
 .emptyTitle {
-  font-size: 0.938rem;
-  font-weight: 500;
-  color: var(--color-text-muted);
-  margin-bottom: 4px;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .emptyHint {
-  font-size: 0.813rem;
-  color: rgba(238, 232, 223, 0.3);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: var(--space-1);
 }
 
 @media (min-width: 768px) {
-  .exerciseName {
-    font-size: 2.5rem;
+  .chartValue {
+    font-size: 2.75rem;
   }
 
-  .chartSection {
-    max-width: 640px;
+  .prCell dd {
+    font-size: 2rem;
   }
-
-  .prGrid {
-    max-width: 480px;
-  }
-}
-
-.insight {
-  font-size: 0.813rem;
-  color: var(--color-text-muted);
-  margin-top: var(--space-3);
-  margin-bottom: var(--space-4);
-  line-height: 1.5;
-}
-
-.progressComparison {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-}
-
-.compCard {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.compLabel {
-  font-size: 0.688rem;
-  font-weight: 500;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.compValue {
-  font-size: 1.125rem;
-  font-weight: 700;
-}
-
-.compHint {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  margin-top: 4px;
-}
-
-.firstSession {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: var(--space-5);
 }

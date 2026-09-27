@@ -1,211 +1,250 @@
 /**
  * Sync Engine for IronBase.
- * Handles background pushing of pending mutations in the local sync_queue to the remote API.
+ * Pushes the local sync_queue to the API, then pulls the account's server
+ * state into the local database. One cycle runs at a time.
  */
 
 import { getDb } from '../database/db.js';
+import { apiRequest } from './apiClient.js';
+import { normalizeDate } from '../repositories/workoutRepository.js';
 
-const API_BASE_URL = 'http://localhost:3001/api';
-const SYNC_INTERVAL_MS = 5000;
-const PULL_INTERVAL_MS = 15000;
+const SYNC_INTERVAL_MS = 10000;
 const MAX_ATTEMPTS = 5;
 
-let isSyncing = false;
-let syncTimer = null;
-let pullTimer = null;
+let timer = null;
+let generation = 0;
+let inFlight = null;
 
 export const syncState = {
-  status: 'idle', // 'idle' | 'syncing' | 'offline' | 'error'
-  listeners: [],
-  setStatus(newStatus) {
-    if (this.status === newStatus) return;
-    this.status = newStatus;
-    this.listeners.forEach(l => l(newStatus));
+  status: 'synced', // 'synced' | 'syncing' | 'offline' | 'error'
+  pending: 0,
+  lastSyncedAt: null,
+  listeners: new Set(),
+  set(patch) {
+    let changed = false;
+    for (const key of Object.keys(patch)) {
+      if (this[key] !== patch[key]) {
+        this[key] = patch[key];
+        changed = true;
+      }
+    }
+    if (changed) this.listeners.forEach(l => l(this.snapshot()));
+  },
+  snapshot() {
+    return { status: this.status, pending: this.pending, lastSyncedAt: this.lastSyncedAt };
   },
   subscribe(listener) {
-    this.listeners.push(listener);
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
-    };
-  }
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  },
 };
 
-/**
- * Start the background sync loop.
- */
+class UnauthorizedError extends Error {}
+class CancelledError extends Error {}
+
+function handleOnline() {
+  syncNow();
+}
+
+function handleOffline() {
+  syncState.set({ status: 'offline' });
+}
+
 export function startSyncEngine() {
-  if (syncTimer) return;
-  console.log('[Sync Engine] Started');
-  
-  // Push changes every 5 seconds
-  syncTimer = setInterval(processSyncQueue, SYNC_INTERVAL_MS);
-  // Pull changes every 15 seconds
-  pullTimer = setInterval(pullServerData, PULL_INTERVAL_MS);
-  
-  // Trigger immediately on start
-  processSyncQueue();
-  pullServerData();
+  if (timer) return;
+  generation++;
+  timer = setInterval(syncNow, SYNC_INTERVAL_MS);
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', handleOffline);
 }
 
-/**
- * Stop the background sync loop.
- */
 export function stopSyncEngine() {
-  if (syncTimer) {
-    clearInterval(syncTimer);
-    clearInterval(pullTimer);
-    syncTimer = null;
-    pullTimer = null;
-    console.log('[Sync Engine] Stopped');
-  }
+  generation++;
+  if (timer) clearInterval(timer);
+  timer = null;
+  inFlight = null;
+  window.removeEventListener('online', handleOnline);
+  window.removeEventListener('offline', handleOffline);
+  syncState.set({ status: 'synced', pending: 0, lastSyncedAt: null });
 }
 
 /**
- * Pull latest data from server.
+ * Run a sync cycle now (or join the one already running).
+ * Resolves once local and server state have been reconciled or the attempt failed.
  */
-async function pullServerData() {
-  if (isSyncing) return;
-  
-  try {
-    isSyncing = true;
-    syncState.setStatus('syncing');
-    
-    const res = await fetch(`${API_BASE_URL}/workouts`);
-    if (!res.ok) throw new Error(`Pull failed: ${res.status}`);
-    
-    const serverWorkouts = await res.json();
-    const db = await getDb();
-    
-    await db.transaction(async (tx) => {
-      for (const w of serverWorkouts) {
-        // Upsert workout
-        await tx.query(
-          `INSERT INTO workouts (id, date, session_focus, updated_at)
-           VALUES ($1, $2, $3, NOW())
-           ON CONFLICT (id) DO UPDATE SET 
-             date = EXCLUDED.date, 
-             session_focus = EXCLUDED.session_focus,
-             updated_at = NOW(),
-             deleted_at = NULL`,
-          [w.id, w.date, w.sessionFocus]
-        );
-        
-        // Delete existing sets to replace them
-        await tx.query('DELETE FROM logged_sets WHERE workout_id = $1', [w.id]);
-        
-        // Insert sets
-        if (w.sets && w.sets.length > 0) {
-          for (let i = 0; i < w.sets.length; i++) {
-            const s = w.sets[i];
-            await tx.query(
-              `INSERT INTO logged_sets (id, workout_id, exercise_id, weight, reps, rpe, set_order)
-               VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-              [s.id, w.id, s.exerciseId, s.weight, s.reps, s.rpe || null, i]
-            );
-          }
-        }
-      }
+export function syncNow() {
+  if (!timer) return Promise.resolve();
+  if (!inFlight) {
+    const gen = generation;
+    inFlight = runCycle(gen).catch(err => {
+      if (gen === generation) console.error('[Sync Engine]', err);
+    }).finally(() => {
+      if (gen === generation) inFlight = null;
     });
-    
-    // Check if there's an active App to notify data changes
-    window.dispatchEvent(new Event('ironbase-data-updated'));
-    
-    syncState.setStatus('idle');
+  }
+  return inFlight;
+}
+
+async function refreshPending(db) {
+  const res = await db.query(`SELECT count(*)::int AS n FROM sync_queue WHERE status = 'pending'`);
+  const failed = await db.query(`SELECT count(*)::int AS n FROM sync_queue WHERE status = 'failed'`);
+  return { pending: res.rows[0].n, failed: failed.rows[0].n };
+}
+
+async function runCycle(gen) {
+  // Capture the database once: if the account changes mid-cycle, writes go
+  // to the (closed) original handle and fail instead of crossing accounts.
+  const db = await getDb();
+  const assertCurrent = () => {
+    if (gen !== generation) throw new CancelledError();
+  };
+
+  const counts = await refreshPending(db);
+  if (!navigator.onLine) {
+    syncState.set({ status: 'offline', pending: counts.pending });
+    return;
+  }
+
+  syncState.set({ status: 'syncing', pending: counts.pending });
+  try {
+    await pushQueue(db, assertCurrent);
+    await pullServerData(db, assertCurrent);
+    const after = await refreshPending(db);
+    syncState.set({
+      status: after.failed > 0 ? 'error' : 'synced',
+      pending: after.pending,
+      lastSyncedAt: new Date(),
+    });
   } catch (err) {
-    // Determine if it's a network error (offline)
-    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-      syncState.setStatus('offline');
+    if (err instanceof CancelledError) return;
+    const after = await refreshPending(db).catch(() => counts);
+    if (err instanceof UnauthorizedError) {
+      syncState.set({ status: 'error', pending: after.pending });
+      window.dispatchEvent(new Event('ironbase-unauthorized'));
+    } else if (err.network) {
+      syncState.set({ status: 'offline', pending: after.pending });
     } else {
-      console.error('[Sync Engine] Pull error:', err);
-      syncState.setStatus('error');
+      console.error('[Sync Engine] Sync failed:', err);
+      syncState.set({ status: 'error', pending: after.pending });
     }
-  } finally {
-    isSyncing = false;
   }
 }
 
-/**
- * Process all pending items in the sync_queue.
- */
-async function processSyncQueue() {
-  if (isSyncing) return;
-  
+async function send(item) {
   try {
-    const db = await getDb();
-    
-    // Get pending operations
-    const res = await db.query(`
-      SELECT * FROM sync_queue 
-      WHERE status = 'pending' AND attempts < $1
-      ORDER BY created_at ASC
-    `, [MAX_ATTEMPTS]);
-
-    if (res.rows.length === 0) return;
-
-    isSyncing = true;
-    syncState.setStatus('syncing');
-
-    console.log(`[Sync Engine] Processing ${res.rows.length} pending operations`);
-
-    let allSuccess = true;
-    for (const item of res.rows) {
-      const success = await processItem(db, item);
-      if (!success) allSuccess = false;
+    if (item.operation === 'UPSERT') {
+      await apiRequest('/workouts', { method: 'POST', body: JSON.parse(item.payload) });
+    } else if (item.operation === 'DELETE') {
+      await apiRequest(`/workouts/${encodeURIComponent(item.entity_id)}`, { method: 'DELETE' });
     }
-    
-    syncState.setStatus(allSuccess ? 'idle' : 'offline');
   } catch (err) {
-    console.error('[Sync Engine] Error processing queue', err);
-    syncState.setStatus('error');
-  } finally {
-    isSyncing = false;
+    // Already gone on the server — the delete's goal is met.
+    if (item.operation === 'DELETE' && err.status === 404) return;
+    throw err;
   }
 }
 
-/**
- * Process a single sync queue item.
- */
-async function processItem(db, item) {
-  const { id, entity_type, entity_id, operation, payload, attempts } = item;
-  let success = false;
+async function pushQueue(db, assertCurrent) {
+  const res = await db.query(`
+    SELECT * FROM sync_queue
+    WHERE status = 'pending' AND entity_type = 'workout'
+    ORDER BY created_at ASC
+  `);
 
+  for (const item of res.rows) {
+    assertCurrent();
+    try {
+      await send(item);
+      await db.query(`UPDATE sync_queue SET status = 'completed', last_attempt_at = NOW() WHERE id = $1`, [item.id]);
+    } catch (err) {
+      if (err.status === 401) throw new UnauthorizedError();
+      // Connectivity problems don't count against the item; it simply waits.
+      if (err.network) throw err;
+      const status = item.attempts + 1 >= MAX_ATTEMPTS ? 'failed' : 'pending';
+      console.warn(`[Sync Engine] ${item.operation} ${item.entity_id} rejected (${err.status}): ${err.message}`);
+      await db.query(
+        `UPDATE sync_queue SET attempts = attempts + 1, last_attempt_at = NOW(), status = $1 WHERE id = $2`,
+        [status, item.id]
+      );
+    }
+  }
+}
+
+function signature(w) {
+  const sets = w.deleted ? '' : w.sets.map(s => [s.id, s.exerciseId, Number(s.weight), Number(s.reps), s.rpe == null ? '' : Number(s.rpe)].join(':')).join(',');
+  return [w.date, w.sessionFocus, w.deleted ? 1 : 0, sets].join('|');
+}
+
+async function readLocalSignatures(db) {
+  const workouts = await db.query('SELECT id, date, session_focus, deleted_at FROM workouts');
+  const sets = await db.query(
+    `SELECT id, workout_id, exercise_id, weight, reps, rpe FROM logged_sets
+     WHERE deleted_at IS NULL ORDER BY set_order ASC, created_at ASC`
+  );
+  const setsByWorkout = {};
+  for (const s of sets.rows) {
+    (setsByWorkout[s.workout_id] ||= []).push({ id: s.id, exerciseId: s.exercise_id, weight: s.weight, reps: s.reps, rpe: s.rpe });
+  }
+  const map = new Map();
+  for (const w of workouts.rows) {
+    map.set(w.id, signature({
+      date: normalizeDate(w.date),
+      sessionFocus: w.session_focus,
+      deleted: w.deleted_at !== null,
+      sets: setsByWorkout[w.id] || [],
+    }));
+  }
+  return map;
+}
+
+async function pullServerData(db, assertCurrent) {
+  let serverWorkouts;
   try {
-    if (entity_type === 'workout') {
-      if (operation === 'UPSERT') {
-        const data = JSON.parse(payload);
-        const res = await fetch(`${API_BASE_URL}/workouts`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error(`API Error: ${res.status}`);
-        success = true;
-      } 
-      else if (operation === 'DELETE') {
-        const res = await fetch(`${API_BASE_URL}/workouts/${entity_id}`, {
-          method: 'DELETE'
-        });
-        if (!res.ok && res.status !== 404) throw new Error(`API Error: ${res.status}`);
-        success = true;
+    serverWorkouts = await apiRequest('/workouts');
+  } catch (err) {
+    if (err.status === 401) throw new UnauthorizedError();
+    throw err;
+  }
+  assertCurrent();
+
+  const pendingRes = await db.query(`SELECT DISTINCT entity_id FROM sync_queue WHERE status = 'pending'`);
+  const pendingIds = new Set(pendingRes.rows.map(r => r.entity_id));
+  const local = await readLocalSignatures(db);
+
+  // Local edits that haven't reached the server yet win over the server copy.
+  const changed = serverWorkouts.filter(w => !pendingIds.has(w.id) && local.get(w.id) !== signature(w) && !(w.deleted && !local.has(w.id)));
+  if (changed.length === 0) return;
+
+  assertCurrent();
+  await db.transaction(async (tx) => {
+    for (const w of changed) {
+      if (w.deleted) {
+        await tx.query('UPDATE workouts SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1', [w.id]);
+        await tx.query('UPDATE logged_sets SET deleted_at = NOW(), updated_at = NOW() WHERE workout_id = $1', [w.id]);
+        continue;
+      }
+      await tx.query(
+        `INSERT INTO workouts (id, date, session_focus, updated_at, synced_at)
+         VALUES ($1, $2, $3, NOW(), NOW())
+         ON CONFLICT (id) DO UPDATE SET
+           date = EXCLUDED.date,
+           session_focus = EXCLUDED.session_focus,
+           updated_at = NOW(),
+           synced_at = NOW(),
+           deleted_at = NULL`,
+        [w.id, w.date, w.sessionFocus]
+      );
+      await tx.query('DELETE FROM logged_sets WHERE workout_id = $1', [w.id]);
+      for (let i = 0; i < w.sets.length; i++) {
+        const s = w.sets[i];
+        await tx.query(
+          `INSERT INTO logged_sets (id, workout_id, exercise_id, weight, reps, rpe, set_order, synced_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+          [s.id, w.id, s.exerciseId, s.weight, s.reps, s.rpe || null, i]
+        );
       }
     }
+  });
 
-    if (success) {
-      // Mark as completed
-      await db.query('UPDATE sync_queue SET status = $1 WHERE id = $2', ['completed', id]);
-      console.log(`[Sync Engine] Successfully synced ${operation} for ${entity_type} ${entity_id}`);
-      return true;
-    }
-    return false;
-  } catch (err) {
-    console.warn(`[Sync Engine] Failed to sync ${id} (Attempt ${attempts + 1})`, err);
-    
-    const newStatus = attempts + 1 >= MAX_ATTEMPTS ? 'failed' : 'pending';
-    await db.query(`
-      UPDATE sync_queue 
-      SET attempts = attempts + 1, last_attempt_at = NOW(), status = $1 
-      WHERE id = $2
-    `, [newStatus, id]);
-    return false;
-  }
+  window.dispatchEvent(new Event('ironbase-data-updated'));
 }

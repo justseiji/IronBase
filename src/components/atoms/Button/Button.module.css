@@ -1,27 +1,55 @@
 .button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
   min-height: 44px;
   padding: 12px 24px;
   border-radius: var(--radius);
   font-weight: 600;
   font-size: 0.938rem;
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  letter-spacing: -0.005em;
   border: none;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-normal) var(--ease-standard),
+    box-shadow var(--motion-normal) var(--ease-standard),
+    opacity var(--motion-normal) var(--ease-standard);
+}
+
+.button > * {
+  grid-area: 1 / 1;
+}
+
+.lg {
+  min-height: 52px;
+  font-size: 1rem;
+  border-radius: var(--radius-lg);
+}
+
+.label {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  gap: 8px;
+  transition: opacity var(--motion-fast) var(--ease-standard), transform var(--motion-normal) var(--ease-emphasized);
 }
 
 .button:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(var(--press-scale));
+  transition-duration: 60ms;
 }
 
 .button:disabled {
   opacity: 0.4;
-  pointer-events: none;
+  cursor: default;
+}
+
+.loading:disabled,
+.success:disabled {
+  opacity: 1;
 }
 
 .button:focus-visible {
@@ -32,37 +60,116 @@
 .primary {
   background: var(--color-primary);
   color: var(--color-text);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 6px 16px -8px rgba(127, 29, 29, 0.6);
 }
-.primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  transform: translateY(-1px);
-}
-.primary:active:not(:disabled) {
-  transform: scale(0.98) translateY(0);
+
+@media (hover: hover) {
+  .primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 10px 24px -10px rgba(153, 27, 27, 0.75);
+  }
+
+  .secondary:hover:not(:disabled) {
+    background: var(--color-surface-raised);
+  }
+
+  .ghost:hover:not(:disabled) {
+    color: var(--color-text);
+    background: rgba(238, 232, 223, 0.05);
+  }
+
+  .danger:hover:not(:disabled) {
+    background: rgba(185, 28, 28, 0.12);
+  }
 }
 
 .secondary {
   background: var(--color-surface);
   color: var(--color-text);
 }
-.secondary:hover:not(:disabled) {
-  filter: brightness(1.2);
-  transform: translateY(-1px);
-}
-.secondary:active:not(:disabled) {
-  transform: scale(0.98) translateY(0);
-  filter: brightness(1);
+
+.ghost {
+  background: transparent;
+  color: var(--color-text-muted);
 }
 
 .danger {
   background: transparent;
-  color: var(--color-danger, #B91C1C);
-  border: 1px solid var(--color-danger, #B91C1C);
-}
-.danger:hover:not(:disabled) {
-  background: rgba(185, 28, 28, 0.1);
+  color: var(--color-danger-text);
+  box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.6) inset;
 }
 
 .fullWidth {
   width: 100%;
+}
+
+/* ─── Loading / success ─── */
+
+.loader,
+.check {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+
+.loader {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.loader span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+.loading .loader span {
+  animation: dot 900ms var(--ease-standard) infinite;
+}
+
+.loader span:nth-child(2) { animation-delay: 150ms; }
+.loader span:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes dot {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-2px); }
+}
+
+.check {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+}
+
+.loading .label,
+.success .label {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.loading .loader {
+  opacity: 1;
+}
+
+.success .check {
+  opacity: 1;
+  animation: draw var(--motion-slow) var(--ease-emphasized) forwards;
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success .check {
+    stroke-dashoffset: 0;
+  }
 }

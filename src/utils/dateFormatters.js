@@ -4,6 +4,17 @@
  */
 
 /**
+ * "YYYY-MM-DD" for a Date in the device's local timezone.
+ * (toISOString() would give the UTC date, which is a different day for much of the world.)
+ */
+export function toLocalDateString(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
  * Relative format: "Today", "Yesterday", or "Mon DD".
  * Used in Dashboard recent workouts.
  */

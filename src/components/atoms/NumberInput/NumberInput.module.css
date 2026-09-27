@@ -1,33 +1,44 @@
 .wrapper {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .input {
-  height: 44px;
-  padding: 0 var(--space-2);
+  height: 48px;
+  padding: 0 14px;
   background: var(--color-surface);
   color: var(--color-text);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  font-size: 0.938rem;
-  transition: var(--transition-fast);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px var(--color-hairline) inset;
+  font-size: 1rem;
   width: 100%;
+  min-width: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   -moz-appearance: textfield;
+  caret-color: var(--color-accent);
+  transition:
+    box-shadow var(--motion-normal) var(--ease-standard),
+    background-color var(--motion-normal) var(--ease-standard);
 }
 
-.input:focus {
-  border-color: var(--color-accent);
-  outline: none;
+@media (hover: hover) {
+  .input:hover {
+    background: var(--color-surface-raised);
+  }
 }
 
+.input:focus,
 .input:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline: none;
+  background: var(--color-surface-raised);
+  box-shadow: 0 0 0 1px var(--color-accent) inset, 0 0 0 4px rgba(166, 139, 107, 0.14);
 }
 
 .input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--color-text-faint);
 }
 
 .input::-webkit-inner-spin-button,

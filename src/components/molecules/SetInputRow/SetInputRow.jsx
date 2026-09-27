@@ -3,8 +3,15 @@ import Button from '../../atoms/Button/Button';
 import styles from './SetInputRow.module.css';
 
 export default function SetInputRow({ weight, onWeightChange, reps, onRepsChange, rpe, onRpeChange, onAddSet, isEditing = false, onCancelEdit }) {
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+      e.preventDefault();
+      onAddSet();
+    }
+  }
+
   return (
-    <div className={styles.row}>
+    <div className={styles.row} onKeyDown={handleKeyDown}>
       <div className={styles.inputs}>
         <NumberInput
           id="weight-input"
@@ -37,14 +44,14 @@ export default function SetInputRow({ weight, onWeightChange, reps, onRepsChange
         />
       </div>
       <div className={styles.actions}>
-        <Button variant="primary" onClick={onAddSet} fullWidth>
-          {isEditing ? 'Update Set' : 'Add Set'}
-        </Button>
         {isEditing && (
           <Button variant="secondary" onClick={onCancelEdit}>
             Cancel
           </Button>
         )}
+        <Button variant="primary" onClick={onAddSet} fullWidth>
+          {isEditing ? 'Update Set' : 'Add Set'}
+        </Button>
       </div>
     </div>
   );

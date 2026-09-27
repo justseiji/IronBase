@@ -1,9 +1,14 @@
-import { useNavigate } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
 import Button from '../../components/atoms/Button/Button';
+import AnimatedNumber from '../../components/atoms/AnimatedNumber/AnimatedNumber';
+import Sparkline from '../../components/atoms/Sparkline/Sparkline';
 import ProgressChart from '../../components/molecules/ProgressChart/ProgressChart';
 import MetricToggle from '../../components/molecules/MetricToggle/MetricToggle';
+import ExerciseChips from '../../components/molecules/ExerciseChips/ExerciseChips';
 import TrainingHeatmap from '../../components/molecules/TrainingHeatmap/TrainingHeatmap';
+import Toast from '../../components/molecules/Toast/Toast';
+import { useAuth } from '../../auth/useAuth';
 import { cleanNumber } from '../../utils/numbers';
 import { formatRelativeDate, getGreeting } from '../../utils/dateFormatters';
 import { getSetsForExercise, computeSessionMetrics, computeChartData, generateProgressInsight } from '../../services/analyticsService';
@@ -16,14 +21,34 @@ const METRIC_OPTIONS = [
   { value: 'e1rm', label: 'Est. 1RM' },
 ];
 
+function lastTrainedPhrase(dateStr) {
+  const rel = formatRelativeDate(dateStr);
+  return rel === 'Today' || rel === 'Yesterday' ? rel.toLowerCase() : `on ${rel}`;
+}
+
+function sortByDateDesc(workouts) {
+  return [...workouts].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
 export default function DashboardPage({ exercises, workoutHistory }) {
   const navigate = useNavigate();
-  const [chartExerciseId, setChartExerciseId] = useState(exercises[0]?.id || '');
+  const location = useLocation();
+  const { user } = useAuth();
+  const [chartExerciseId, setChartExerciseId] = useState(() => {
+    const latest = sortByDateDesc(workoutHistory)[0];
+    return latest?.sets[0]?.exerciseId || exercises[0]?.id || '';
+  });
   const [activeMetric, setActiveMetric] = useState('weight');
+  const [savedToast] = useState(() => location.state?.savedWorkout ?? null);
+
+  useEffect(() => {
+    if (location.state?.savedWorkout) navigate('.', { replace: true, state: null });
+  }, [location.state, navigate]);
 
   const hasData = workoutHistory.length > 0;
+  const sortedWorkouts = useMemo(() => sortByDateDesc(workoutHistory), [workoutHistory]);
 
-  // Strength overview with progress %
+  // Strength overview with progress % and per-session trend
   const strengthData = useMemo(() => {
     return exercises.map(ex => {
       const sessions = {};
@@ -36,14 +61,15 @@ export default function DashboardPage({ exercises, workoutHistory }) {
         });
       });
       const dates = Object.keys(sessions).sort();
-      const maxWeight = Math.max(0, ...Object.values(sessions));
-      const firstWeight = dates.length > 0 ? sessions[dates[0]] : 0;
-      const lastWeight = dates.length > 0 ? sessions[dates[dates.length - 1]] : 0;
+      const trend = dates.map(d => sessions[d]);
+      const maxWeight = Math.max(0, ...trend);
+      const firstWeight = trend[0] ?? 0;
+      const lastWeight = trend[trend.length - 1] ?? 0;
       let progressPct = null;
       if (dates.length >= 2 && firstWeight > 0) {
         progressPct = cleanNumber(((lastWeight - firstWeight) / firstWeight) * 100);
       }
-      return { ...ex, maxWeight, progressPct, sessionCount: dates.length };
+      return { ...ex, maxWeight, progressPct, sessionCount: dates.length, trend: trend.slice(-10) };
     }).filter(ex => ex.maxWeight > 0);
   }, [exercises, workoutHistory]);
 
@@ -53,14 +79,13 @@ export default function DashboardPage({ exercises, workoutHistory }) {
     return computeSessionMetrics(sets);
   }, [workoutHistory, chartExerciseId]);
 
-  const chartData = useMemo(() => {
-    return computeChartData(chartSessionData, activeMetric);
-  }, [chartSessionData, activeMetric]);
+  const chartData = useMemo(() => computeChartData(chartSessionData, activeMetric), [chartSessionData, activeMetric]);
 
-  const chartUnit = activeMetric === 'volume' ? 'lbs\u00b7reps' : 'lbs';
+  const chartUnit = activeMetric === 'volume' ? 'lbs·reps' : 'lbs';
   const chartExercise = exercises.find(e => e.id === chartExerciseId);
+  const latestPoint = chartData[chartData.length - 1];
+  const chartDelta = chartData.length >= 2 ? cleanNumber(latestPoint.value - chartData[0].value) : null;
 
-  // Training insight
   const insight = useMemo(() => {
     return generateProgressInsight(chartSessionData, chartExercise?.name, {
       emptyMessage: 'Your journey starts here. Keep logging to build your progression.',
@@ -76,164 +101,216 @@ export default function DashboardPage({ exercises, workoutHistory }) {
     const dayOfWeek = (now.getDay() + 6) % 7; // Mon=0
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - dayOfWeek);
-    weekStart.setHours(0,0,0,0);
+    weekStart.setHours(0, 0, 0, 0);
 
     let thisMonth = 0;
     let thisWeek = 0;
+    let monthVolume = 0;
     workoutHistory.forEach(w => {
       const d = new Date(w.date + 'T00:00:00');
-      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) thisMonth++;
+      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+        thisMonth++;
+        w.sets.forEach(s => { monthVolume += cleanNumber(s.weight) * Number(s.reps); });
+      }
       if (d >= weekStart) thisWeek++;
     });
-    return { thisMonth, thisWeek };
+    return { thisMonth, thisWeek, monthVolume: cleanNumber(monthVolume) };
   }, [workoutHistory]);
 
   // Personal records
-  const mostRecentWorkoutId = useMemo(() => {
-    if (workoutHistory.length === 0) return null;
-    return [...workoutHistory].sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.id;
-  }, [workoutHistory]);
-
-  const personalRecords = useMemo(() => {
-    return computePersonalRecords(workoutHistory, exercises, mostRecentWorkoutId);
-  }, [workoutHistory, exercises, mostRecentWorkoutId]);
+  const mostRecentWorkoutId = sortedWorkouts[0]?.id ?? null;
+  const personalRecords = useMemo(
+    () => computePersonalRecords(workoutHistory, exercises, mostRecentWorkoutId),
+    [workoutHistory, exercises, mostRecentWorkoutId]
+  );
 
   // Recent workouts
   const recentWorkouts = useMemo(() => {
-    return [...workoutHistory]
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5)
-      .map(w => {
-        const exerciseNames = [...new Set(w.sets.map(s => exercises.find(e => e.id === s.exerciseId)?.name).filter(Boolean))];
-        let heaviest = 0;
-        w.sets.forEach(s => { 
-          const wt = cleanNumber(s.weight);
-          if (wt > heaviest) heaviest = wt; 
-        });
-        return { ...w, exerciseNames, heaviest };
+    return sortedWorkouts.slice(0, 5).map(w => {
+      const exerciseNames = [...new Set(w.sets.map(s => exercises.find(e => e.id === s.exerciseId)?.name).filter(Boolean))];
+      let heaviest = 0;
+      let volume = 0;
+      w.sets.forEach(s => {
+        const wt = cleanNumber(s.weight);
+        if (wt > heaviest) heaviest = wt;
+        volume += wt * Number(s.reps);
       });
-  }, [workoutHistory, exercises]);
+      return { ...w, exerciseNames, heaviest, volume: cleanNumber(volume) };
+    });
+  }, [sortedWorkouts, exercises]);
+
+  const lastWorkout = sortedWorkouts[0];
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
     <div className={styles.page}>
-      <div className={styles.greeting}>
-        <h1 className={styles.greetingText}>{getGreeting()}</h1>
-        <Button variant="primary" onClick={() => navigate('/log')}>Log Workout</Button>
-      </div>
+      {savedToast && (
+        <Toast title="Workout saved">
+          {savedToast.sessionFocus} · {savedToast.setCount} set{savedToast.setCount !== 1 ? 's' : ''}
+        </Toast>
+      )}
 
-      {/* Strength Overview */}
-      {strengthData.length > 0 && (
-        <div className={styles.section}>
-          <span className={styles.sectionLabel}>Strength</span>
-          <div className={styles.strengthList}>
-            {strengthData.map(ex => (
-              <div key={ex.id} className={styles.strengthRow}>
-                <div className={styles.strengthLeft}>
-                  <span className={styles.strengthName}>{ex.name}</span>
-                  {ex.progressPct !== null ? (
-                    <span className={Number(ex.progressPct) >= 0 ? styles.progressUp : styles.progressDown}>
-                      {Number(ex.progressPct) >= 0 ? '\u2191' : '\u2193'} {Math.abs(Number(ex.progressPct))}%
+      <header className={styles.hero}>
+        <div className={styles.heroText}>
+          <span className={`${styles.kicker} motion-slide-up`}>{today}</span>
+          <h1 className={`${styles.greeting} motion-slide-up`} style={{ '--i': 1 }}>
+            {getGreeting()}{user?.username ? <>, <span className={styles.name}>{user.username}</span></> : null}.
+          </h1>
+          <p className={`${styles.heroSub} motion-slide-up`} style={{ '--i': 2 }}>
+            {lastWorkout
+              ? <>Last trained <strong>{lastTrainedPhrase(lastWorkout.date)}</strong> · {lastWorkout.sessionFocus}</>
+              : 'Log your first session to start building your record.'}
+          </p>
+        </div>
+        <div className={`${styles.heroAction} motion-slide-up`} style={{ '--i': 2 }}>
+          <Button variant="primary" size="lg" onClick={() => navigate('/log')}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            Log Workout
+          </Button>
+        </div>
+      </header>
+
+      <dl className={styles.metrics}>
+        <div className={`${styles.metric} motion-slide-up`} style={{ '--i': 3 }}>
+          <dt>This week</dt>
+          <dd><AnimatedNumber value={consistency.thisWeek} /><span className={styles.metricUnit}>workout{consistency.thisWeek !== 1 ? 's' : ''}</span></dd>
+        </div>
+        <div className={`${styles.metric} motion-slide-up`} style={{ '--i': 4 }}>
+          <dt>This month</dt>
+          <dd><AnimatedNumber value={consistency.thisMonth} /><span className={styles.metricUnit}>workout{consistency.thisMonth !== 1 ? 's' : ''}</span></dd>
+        </div>
+        <div className={`${styles.metric} motion-slide-up`} style={{ '--i': 5 }}>
+          <dt>Month volume</dt>
+          <dd><AnimatedNumber value={consistency.monthVolume} /><span className={styles.metricUnit}>lbs</span></dd>
+        </div>
+      </dl>
+
+      <div className={styles.columns}>
+        <div className={styles.mainColumn}>
+          {/* Progress Graph — ALWAYS VISIBLE */}
+          <section className={`${styles.section} motion-slide-up`} style={{ '--i': 6 }} aria-labelledby="progress-heading">
+            <div className={styles.sectionHeader}>
+              <h2 id="progress-heading" className={styles.sectionLabel}>Progress</h2>
+              <MetricToggle options={METRIC_OPTIONS} activeValue={activeMetric} onChange={setActiveMetric} />
+            </div>
+            <ExerciseChips exercises={exercises} selectedId={chartExerciseId} onSelect={setChartExerciseId} label="Chart exercise" />
+
+            <div className={styles.chartHeadline} aria-live="polite">
+              {latestPoint ? (
+                <>
+                  <span className={styles.chartValue}>
+                    <AnimatedNumber value={latestPoint.value} duration={550} />
+                    <span className={styles.chartUnit}>{chartUnit}</span>
+                  </span>
+                  {chartDelta !== null && chartDelta !== 0 && (
+                    <span key={`${chartExerciseId}-${activeMetric}`} className={chartDelta > 0 ? styles.deltaUp : styles.deltaDown}>
+                      {chartDelta > 0 ? '+' : '−'}{Math.abs(chartDelta).toLocaleString('en-US')} since first session
                     </span>
-                  ) : ex.sessionCount === 1 ? (
-                    <span className={styles.progressFirst}>First session</span>
-                  ) : null}
-                </div>
-                <span className={styles.strengthValue}>
-                  {ex.maxWeight}<span className={styles.strengthUnit}> lbs</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Progress Graph — ALWAYS VISIBLE */}
-      <div className={styles.section}>
-        <div className={styles.chartHeader}>
-          <span className={styles.sectionLabel}>Progress</span>
-          <div className={styles.chartControls}>
-            <select
-              className={styles.chartSelect}
-              value={chartExerciseId}
-              onChange={e => setChartExerciseId(e.target.value)}
-            >
-              {exercises.map(ex => (
-                <option key={ex.id} value={ex.id}>{ex.name}</option>
-              ))}
-            </select>
-            <MetricToggle options={METRIC_OPTIONS} activeValue={activeMetric} onChange={setActiveMetric} />
-          </div>
-        </div>
-        <ProgressChart key={`${chartExerciseId}-${activeMetric}`} data={chartData} metricLabel={METRIC_OPTIONS.find(o => o.value === activeMetric)?.label} unit={chartUnit} />
-        <p className={styles.insight}>{insight}</p>
-      </div>
-
-      {/* Training Consistency */}
-      {hasData && (
-        <div className={styles.section}>
-          <span className={styles.sectionLabel}>This Month</span>
-          <div className={styles.consistencyRow}>
-            <div className={styles.consistencyStat}>
-              <span className={styles.consistencyValue}>{consistency.thisMonth}</span>
-              <span className={styles.consistencyLabel}>workout{consistency.thisMonth !== 1 ? 's' : ''}</span>
+                  )}
+                </>
+              ) : (
+                <span className={styles.chartEmptyHeadline}>No {chartExercise?.name ?? ''} sessions yet</span>
+              )}
             </div>
-            <div className={styles.consistencyStat}>
-              <span className={styles.consistencyValue}>{consistency.thisWeek}</span>
-              <span className={styles.consistencyLabel}>this week</span>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Training Heatmap */}
-      {hasData && (
-        <div className={styles.section}>
-          <span className={styles.sectionLabel}>Training Activity</span>
-          <TrainingHeatmap workoutHistory={workoutHistory} />
-        </div>
-      )}
+            <ProgressChart data={chartData} unit={chartUnit} />
+            <p key={insight} className={styles.insight}>{insight}</p>
+          </section>
 
-      {/* Personal Records */}
-      {personalRecords.length > 0 && (
-        <div className={styles.section}>
-          <span className={styles.sectionLabel}>Personal Records</span>
-          <div className={styles.prList}>
-            {personalRecords.map(pr => (
-              <div key={pr.exerciseId} className={styles.prRow}>
-                <div className={styles.prLeft}>
-                  <span className={styles.prName}>{pr.name}</span>
-                  {pr.isNew && <span className={styles.prNew}>NEW</span>}
-                </div>
-                <span className={styles.prValue}>{pr.weight} lbs \u00d7 {pr.reps}</span>
-              </div>
-            ))}
-          </div>
+          {/* Strength Overview */}
+          {strengthData.length > 0 && (
+            <section className={`${styles.section} motion-slide-up`} style={{ '--i': 7 }} aria-labelledby="strength-heading">
+              <h2 id="strength-heading" className={styles.sectionLabel}>Strength</h2>
+              <ul className={styles.strengthList}>
+                {strengthData.map((ex, i) => (
+                  <li key={ex.id} className={`${styles.strengthRow} motion-fade-in`} style={{ '--i': 8 + i }}>
+                    <button type="button" className={styles.strengthButton} onClick={() => setChartExerciseId(ex.id)} aria-label={`Show ${ex.name} progress`}>
+                      <span className={styles.strengthLeft}>
+                        <span className={styles.strengthName}>{ex.name}</span>
+                        {ex.progressPct !== null ? (
+                          <span className={Number(ex.progressPct) >= 0 ? styles.progressUp : styles.progressDown}>
+                            {Number(ex.progressPct) >= 0 ? '↑' : '↓'} {Math.abs(Number(ex.progressPct))}%
+                          </span>
+                        ) : ex.sessionCount === 1 ? (
+                          <span className={styles.progressFirst}>First session</span>
+                        ) : null}
+                      </span>
+                      <Sparkline values={ex.trend} />
+                      <span className={styles.strengthValue}>
+                        <AnimatedNumber value={ex.maxWeight} />
+                        <span className={styles.strengthUnit}> lbs</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
-      )}
 
-      {/* Recent Workouts */}
-      {recentWorkouts.length > 0 && (
-        <div className={styles.section}>
-          <span className={styles.sectionLabel}>Recent Workouts</span>
-          <div className={styles.workoutTimeline}>
-            {recentWorkouts.map(w => (
-              <div key={w.id} className={styles.workoutEntry} onClick={() => navigate('/workout-history')} role="button" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') navigate('/workout-history'); }}>
-                <div className={styles.workoutDateCol}>
-                  <span className={styles.workoutDate}>{formatRelativeDate(w.date)}</span>
-                </div>
-                <div className={styles.workoutContent}>
-                  <span className={styles.workoutFocus}>{w.sessionFocus}</span>
-                  <span className={styles.workoutExercises}>{w.exerciseNames.join(' \u00b7 ')}</span>
-                  <span className={styles.workoutStats}>{w.sets.length} set{w.sets.length !== 1 ? 's' : ''}{w.heaviest > 0 ? ` \u00b7 ${w.heaviest} lbs` : ''}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className={styles.sideColumn}>
+          {/* Training Heatmap */}
+          {hasData && (
+            <section className={`${styles.section} motion-slide-up`} style={{ '--i': 7 }} aria-labelledby="activity-heading">
+              <h2 id="activity-heading" className={styles.sectionLabel}>Training Activity</h2>
+              <TrainingHeatmap workoutHistory={workoutHistory} />
+            </section>
+          )}
+
+          {/* Personal Records */}
+          {personalRecords.length > 0 && (
+            <section className={`${styles.section} motion-slide-up`} style={{ '--i': 8 }} aria-labelledby="pr-heading">
+              <h2 id="pr-heading" className={styles.sectionLabel}>Personal Records</h2>
+              <ul className={styles.prList}>
+                {personalRecords.map((pr, i) => (
+                  <li key={pr.exerciseId} className={`${styles.prRow} motion-fade-in`} style={{ '--i': 9 + i }}>
+                    <span className={styles.prLeft}>
+                      <span className={styles.prName}>{pr.name}</span>
+                      {pr.isNew && <span className={styles.prNew}>New</span>}
+                    </span>
+                    <span className={styles.prValue}>
+                      <strong>{pr.weight}</strong> lbs × {pr.reps}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* Recent Workouts */}
+          {recentWorkouts.length > 0 && (
+            <section className={`${styles.section} motion-slide-up`} style={{ '--i': 9 }} aria-labelledby="recent-heading">
+              <h2 id="recent-heading" className={styles.sectionLabel}>Recent Workouts</h2>
+              <ul className={styles.workoutTimeline}>
+                {recentWorkouts.map((w, i) => (
+                  <li key={w.id} className="motion-fade-in" style={{ '--i': 10 + i }}>
+                    <button type="button" className={styles.workoutEntry} onClick={() => navigate('/workout-history')}>
+                      <span className={styles.workoutDate}>{formatRelativeDate(w.date)}</span>
+                      <span className={styles.workoutContent}>
+                        <span className={styles.workoutFocus}>{w.sessionFocus}</span>
+                        <span className={styles.workoutExercises}>{w.exerciseNames.join(' · ')}</span>
+                        <span className={styles.workoutStats}>
+                          {w.sets.length} set{w.sets.length !== 1 ? 's' : ''}
+                          {w.heaviest > 0 ? ` · top ${w.heaviest} lbs` : ''}
+                          {w.volume > 0 ? ` · ${w.volume.toLocaleString('en-US')} lbs volume` : ''}
+                        </span>
+                      </span>
+                      <svg className={styles.chevron} width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" /></svg>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <Button variant="ghost" fullWidth className={styles.viewAll} onClick={() => navigate('/workout-history')}>View All Workouts</Button>
+            </section>
+          )}
+
+          {!hasData && (
+            <section className={`${styles.emptyState} motion-slide-up`} style={{ '--i': 7 }}>
+              <p className={styles.emptyTitle}>Nothing logged yet</p>
+              <p className={styles.emptyHint}>Your heatmap, records, and recent sessions will appear here after your first workout.</p>
+            </section>
+          )}
         </div>
-      )}
-
-      <div className={styles.viewAll}>
-        <Button variant="secondary" onClick={() => navigate('/workout-history')} fullWidth>View All Workouts</Button>
       </div>
     </div>
   );

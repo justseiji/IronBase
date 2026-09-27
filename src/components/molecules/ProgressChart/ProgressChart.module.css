@@ -1,75 +1,121 @@
 .chart {
+  position: relative;
   width: 100%;
-  animation: fadeIn 0.3s ease-out;
+  animation: ib-fade-in var(--motion-slow) var(--ease-standard) both;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Recharts focus outlines on the SVG surface are noise for pointer users */
+.chart :global(.recharts-surface):focus {
+  outline: none;
 }
 
-.emptyChart {
-  height: 180px;
+/* ─── Empty ─── */
+
+.empty {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
+}
+
+.ghost {
+  position: absolute;
+  inset: 16px 0 24px;
+  width: 100%;
+  height: calc(100% - 40px);
+}
+
+.ghost polyline {
+  fill: none;
+  stroke: rgba(238, 232, 223, 0.08);
+  stroke-width: 2;
+  stroke-dasharray: 4 6;
+  vector-effect: non-scaling-stroke;
 }
 
 .emptyText {
-  font-size: 0.813rem;
-  color: rgba(238, 232, 223, 0.3);
-  text-align: center;
   position: relative;
-  z-index: 1;
+  font-size: 0.813rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 17, 19, 0.85);
 }
 
-.singlePoint {
+/* ─── Single point ─── */
+
+.single {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: var(--space-1);
+  align-items: center;
+  justify-content: center;
 }
 
-.singleValue {
-  font-size: 1.25rem;
-  font-weight: 700;
+.baseline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px dashed rgba(238, 232, 223, 0.08);
 }
 
-.singleUnit {
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: rgba(238, 232, 223, 0.5);
+.singleDot {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-bg), 0 0 0 5px rgba(166, 139, 107, 0.3), 0 0 24px rgba(166, 139, 107, 0.5);
+  animation: ib-scale-in var(--motion-slow) var(--ease-emphasized) both;
+}
+
+.singleCaption {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 18px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  animation: ib-slide-up var(--motion-slow) var(--ease-emphasized) 100ms both;
 }
 
 .singleDate {
-  font-size: 0.75rem;
-  color: rgba(238, 232, 223, 0.4);
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: var(--color-text);
 }
 
+.singleHint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* ─── Tooltip ─── */
+
 .tooltip {
-  background: #1A1D20;
+  background: rgba(30, 33, 37, 0.96);
   padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(238, 232, 223, 0.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--color-hairline-strong), 0 10px 24px -8px rgba(0, 0, 0, 0.6);
 }
 
 .tooltipDate {
   font-size: 0.688rem;
-  color: rgba(238, 232, 223, 0.5);
+  color: var(--color-text-muted);
   margin-bottom: 2px;
 }
 
 .tooltipValue {
-  font-size: 0.875rem;
+  font-size: 0.938rem;
   font-weight: 600;
-  color: #EEE8DF;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
 }
 
 .tooltipUnit {
   font-weight: 400;
-  color: rgba(238, 232, 223, 0.5);
+  color: var(--color-text-muted);
   font-size: 0.75rem;
 }

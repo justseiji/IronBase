@@ -6,14 +6,20 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/ironbase'
 });
 
+// An idle client error (e.g. the database restarting) must not crash the API.
+pool.on('error', (err) => {
+  console.error('[IronBase API] Idle database client error:', err.message);
+});
+
 /**
  * Initialize database schema for the cloud backend.
+ * Every statement is idempotent so it is safe to run on each start.
  */
 export async function initDb() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -54,8 +60,27 @@ export async function initDb() {
         deleted_at TIMESTAMPTZ,
         synced_at TIMESTAMPTZ
       );
+
+      -- Accounts
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+      CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_key ON users (lower(email));
+      CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_key ON users (lower(username));
+
+      -- Sessions (only a SHA-256 of the token is stored)
+      CREATE TABLE IF NOT EXISTS sessions (
+        token_hash TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        expires_at TIMESTAMPTZ NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id);
+      CREATE INDEX IF NOT EXISTS workouts_user_id_idx ON workouts(user_id);
     `);
-    
+
     // Seed default exercises if table is empty
     const res = await client.query('SELECT count(*) FROM exercises');
     if (parseInt(res.rows[0].count, 10) === 0) {

@@ -1,12 +1,12 @@
 .heading {
   font-weight: 700;
   color: var(--color-text);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
 .h1 {
-  font-size: 2rem;
+  font-size: clamp(2rem, 8.5vw, 2.5rem);
 }
 
 .h2 {
@@ -15,4 +15,11 @@
 
 .h3 {
   font-size: 1.125rem;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .h1 {
+    font-size: 3rem;
+  }
 }

@@ -3,7 +3,7 @@ import styles from './Footer.module.css';
 export default function Footer() {
   return (
     <footer className={styles.footer}>
-      IronBase © 2026
+      IronBase © {new Date().getFullYear()}
     </footer>
   );
 }

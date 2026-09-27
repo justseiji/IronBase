@@ -1,15 +1,9 @@
 import TextInput from '../../atoms/TextInput/TextInput';
-import Select from '../../atoms/Select/Select';
+import Label from '../../atoms/Label/Label';
+import ExerciseChips from '../ExerciseChips/ExerciseChips';
 import styles from './WorkoutMetaFields.module.css';
 
-const sessionOptions = [
-  { value: 'Push', label: 'Push' },
-  { value: 'Pull', label: 'Pull' },
-  { value: 'Legs', label: 'Legs' },
-  { value: 'Upper', label: 'Upper' },
-  { value: 'Lower', label: 'Lower' },
-  { value: 'Full Body', label: 'Full Body' },
-];
+const SESSION_OPTIONS = ['Push', 'Pull', 'Legs', 'Upper', 'Lower', 'Full Body'].map(v => ({ id: v, name: v }));
 
 export default function WorkoutMetaFields({ date, onDateChange, sessionFocus, onSessionFocusChange }) {
   return (
@@ -20,15 +14,17 @@ export default function WorkoutMetaFields({ date, onDateChange, sessionFocus, on
         type="date"
         value={date}
         onChange={onDateChange}
+        className={styles.date}
       />
-      <Select
-        id="session-focus"
-        label="Session Focus"
-        value={sessionFocus}
-        onChange={onSessionFocusChange}
-        options={sessionOptions}
-        placeholder="Choose focus…"
-      />
+      <div className={styles.focus}>
+        <Label>Session Focus</Label>
+        <ExerciseChips
+          exercises={SESSION_OPTIONS}
+          selectedId={sessionFocus}
+          onSelect={onSessionFocusChange}
+          label="Session focus"
+        />
+      </div>
     </div>
   );
 }

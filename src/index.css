@@ -1,15 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
+  color-scheme: dark;
+
   --color-bg: #0F1113;
   --color-surface: #1A1D20;
+  --color-surface-raised: #212529;
   --color-text: #EEE8DF;
   --color-primary: #7F1D1D;
   --color-primary-hover: #991B1B;
   --color-accent: #A68B6B;
   --color-accent-dim: rgba(166, 139, 107, 0.3);
+  --color-accent-soft: rgba(166, 139, 107, 0.12);
   --color-danger: #B91C1C;
-  --color-text-muted: rgba(238, 232, 223, 0.5);
+  --color-danger-text: #F08A8A;
+  --color-text-muted: rgba(238, 232, 223, 0.56);
+  --color-text-faint: rgba(238, 232, 223, 0.36);
+  --color-hairline: rgba(238, 232, 223, 0.06);
+  --color-hairline-strong: rgba(238, 232, 223, 0.12);
   --color-positive: #4ADE80;
   --color-negative: #F87171;
 
@@ -19,13 +27,26 @@
   --space-4: 32px;
   --space-5: 40px;
   --space-6: 48px;
+  --space-7: 64px;
 
   --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --radius: 10px;
   --radius-sm: 6px;
   --radius-lg: 14px;
-  --transition-fast: 0.15s ease-out;
-  --transition-medium: 0.3s ease-out;
+  --radius-pill: 999px;
+
+  /* ─── Motion system ─── */
+  --motion-fast: 140ms;
+  --motion-normal: 240ms;
+  --motion-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --stagger-step: 45ms;
+  --press-scale: 0.97;
+
+  --transition-fast: var(--motion-fast) var(--ease-standard);
+  --transition-medium: var(--motion-normal) var(--ease-standard);
 }
 
 *, *::before, *::after {
@@ -38,6 +59,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -47,6 +69,7 @@ body {
   line-height: 1.5;
   min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 #root {
@@ -65,6 +88,7 @@ button {
   border: none;
   background: none;
   color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 input, select {
@@ -77,26 +101,86 @@ input, select {
   outline-offset: 2px;
 }
 
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.launch {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Motion primitives ───
+   Apply with an optional --i custom property for staggered entrances. */
+
+@keyframes ib-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ib-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ib-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes ib-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+@keyframes ib-flash {
+  0% { background-color: var(--color-accent-soft); }
+  100% { background-color: transparent; }
+}
+
+@keyframes ib-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.motion-fade-in,
+.motion-slide-up,
+.motion-scale-in {
+  animation-duration: var(--motion-slow);
+  animation-timing-function: var(--ease-emphasized);
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger-step));
+}
+
+.motion-fade-in { animation-name: ib-fade-in; }
+.motion-slide-up { animation-name: ib-slide-up; }
+.motion-scale-in { animation-name: ib-scale-in; }
+
+.skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg,
+    rgba(238, 232, 223, 0.04) 0%,
+    rgba(238, 232, 223, 0.08) 50%,
+    rgba(238, 232, 223, 0.04) 100%);
+  background-size: 200% 100%;
+  animation: ib-shimmer 1.6s var(--ease-standard) infinite;
+}
+
+/* Legacy keyframe names still referenced by some modules */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
@@ -104,21 +188,12 @@ input, select {
   to { opacity: 1; }
 }
 
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

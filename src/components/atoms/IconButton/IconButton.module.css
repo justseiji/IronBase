@@ -4,21 +4,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: transparent;
   color: var(--color-text-muted);
-  transition: var(--transition-fast);
   cursor: pointer;
   border: none;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
-.iconButton:hover {
-  color: var(--color-text);
-  background: rgba(238, 232, 223, 0.05);
+@media (hover: hover) {
+  .iconButton:hover {
+    color: var(--color-text);
+    background: rgba(238, 232, 223, 0.06);
+  }
 }
 
 .iconButton:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
+  transition-duration: 60ms;
 }
 
 .iconButton:focus-visible {
