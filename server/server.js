@@ -19,6 +19,20 @@ app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/auth', authRouter);
 
+// TEMPORARY: reports how the caller's address arrives through the proxies, to
+// set TRUST_PROXY correctly. Remove once that's done.
+app.get('/api/debug/ip', (req, res) => {
+  res.json({
+    ip: req.ip,
+    ips: req.ips,
+    socket: req.socket.remoteAddress,
+    trustProxy: app.get('trust proxy'),
+    forwardedFor: req.headers['x-forwarded-for'] ?? null,
+    realIp: req.headers['x-real-ip'] ?? null,
+    vercelForwardedFor: req.headers['x-vercel-forwarded-for'] ?? null,
+  });
+});
+
 // Validation middleware
 function validateWorkout(req, res, next) {
   const { id, date, sessionFocus, sets } = req.body;
