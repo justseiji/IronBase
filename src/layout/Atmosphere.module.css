@@ -1,0 +1,152 @@
+/*
+ * Global atmospheric backdrop: diffuse light, grain, and dust, painted behind
+ * every screen. All light is drawn from the existing palette (--color-text and
+ * --color-accent at very low alpha) over the unchanged --color-bg, so nothing
+ * here tints the interface — it only lifts the empty background a few shades.
+ */
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.layer {
+  position: absolute;
+  will-change: transform, opacity;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+/* Broad, soft illumination filling the upper half — the "air" the light sits in. */
+.glow {
+  top: -24vh;
+  left: -10vw;
+  width: 120vw;
+  height: 90vh;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+    rgba(238, 232, 223, 0.034) 0%,
+    rgba(238, 232, 223, 0.022) 34%,
+    rgba(238, 232, 223, 0.008) 60%,
+    transparent 78%);
+  animation-name: glow-drift;
+  animation-duration: 131s;
+  animation-delay: -47s;
+}
+
+/*
+ * The arc of light from the reference: a wide elliptical band with long,
+ * feathered falloff on both sides, faded out toward the bottom so it reads
+ * as light catching haze rather than a ring.
+ */
+.arc {
+  top: -6vh;
+  left: -16vw;
+  width: 132vw;
+  height: 142vh;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+    transparent 0%,
+    transparent 52%,
+    rgba(238, 232, 223, 0.012) 60%,
+    rgba(238, 232, 223, 0.036) 67%,
+    rgba(238, 232, 223, 0.044) 71%,
+    rgba(238, 232, 223, 0.028) 77%,
+    rgba(238, 232, 223, 0.01) 85%,
+    transparent 94%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 22%, rgba(0, 0, 0, 0.45) 38%, transparent 56%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 22%, rgba(0, 0, 0, 0.45) 38%, transparent 56%);
+  animation-name: arc-drift;
+  animation-duration: 97s;
+  animation-delay: -31s;
+}
+
+/* A faint warm pool low in the frame, from the existing tan accent. */
+.warmth {
+  right: -30vw;
+  bottom: -38vh;
+  width: 90vw;
+  height: 90vh;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+    rgba(166, 139, 107, 0.045) 0%,
+    rgba(166, 139, 107, 0.02) 40%,
+    transparent 72%);
+  animation-name: warmth-drift;
+  animation-duration: 173s;
+  animation-delay: -88s;
+}
+
+/*
+ * Static film grain; also breaks up banding in the dark gradients. Masked to
+ * where the haze is, so the untouched background stays exactly --color-bg.
+ */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 22%, #000 0%, rgba(0, 0, 0, 0.5) 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 55% at 50% 22%, #000 0%, rgba(0, 0, 0, 0.5) 55%, transparent 100%);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.933 0 0 0 0 0.91 0 0 0 0 0.875 2.6 0 0 0 -1.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+.dust {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * Each layer drifts on its own long, co-prime period with alternate direction,
+ * so their combined state effectively never repeats.
+ */
+@keyframes glow-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+  45% { transform: translate3d(3vw, 2vh, 0) scale(1.04); opacity: 1; }
+  100% { transform: translate3d(-2vw, 4vh, 0) scale(1.02); opacity: 0.9; }
+}
+
+@keyframes arc-drift {
+  0% { transform: translate3d(0, 0, 0) rotate(-3deg) scale(1); opacity: 0.9; }
+  38% { transform: translate3d(2.5vw, 1.5vh, 0) rotate(-1.2deg) scale(1.02); opacity: 1; }
+  100% { transform: translate3d(-3vw, 3vh, 0) rotate(-4.5deg) scale(1.035); opacity: 0.82; }
+}
+
+@keyframes warmth-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.8; }
+  100% { transform: translate3d(-6vw, -4vh, 0) scale(1.08); opacity: 1; }
+}
+
+/* Phones: a narrower frame needs a wider, higher arc so it still spans the screen. */
+@media (max-width: 767px) {
+  .glow {
+    top: -18vh;
+    left: -40vw;
+    width: 180vw;
+    height: 70vh;
+  }
+
+  .arc {
+    top: -4vh;
+    left: -55vw;
+    width: 210vw;
+    height: 100vh;
+  }
+
+  .warmth {
+    right: -60vw;
+    bottom: -30vh;
+    width: 150vw;
+    height: 70vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    animation: none;
+  }
+}
