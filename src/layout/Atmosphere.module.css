@@ -16,10 +16,8 @@
 
 .layer {
   position: absolute;
+  /* Moved continuously by hazeDrift.js; static when motion is reduced. */
   will-change: transform, opacity;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
 }
 
 /* Broad, soft illumination filling the upper half — the "air" the light sits in. */
@@ -33,9 +31,6 @@
     rgba(238, 232, 223, 0.022) 34%,
     rgba(238, 232, 223, 0.008) 60%,
     transparent 78%);
-  animation-name: glow-drift;
-  animation-duration: 131s;
-  animation-delay: -47s;
 }
 
 /*
@@ -59,9 +54,26 @@
     transparent 94%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 22%, rgba(0, 0, 0, 0.45) 38%, transparent 56%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 22%, rgba(0, 0, 0, 0.45) 38%, transparent 56%);
-  animation-name: arc-drift;
-  animation-duration: 97s;
-  animation-delay: -31s;
+}
+
+/*
+ * A second, fainter band just outside the arc. It drifts independently, so
+ * together they thicken, thin, and bend — the lit shape itself changes.
+ */
+.veil {
+  top: -2vh;
+  left: -10vw;
+  width: 124vw;
+  height: 136vh;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+    transparent 0%,
+    transparent 62%,
+    rgba(238, 232, 223, 0.01) 70%,
+    rgba(238, 232, 223, 0.026) 76%,
+    rgba(238, 232, 223, 0.012) 83%,
+    transparent 92%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 18%, rgba(0, 0, 0, 0.4) 34%, transparent 52%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 18%, rgba(0, 0, 0, 0.4) 34%, transparent 52%);
 }
 
 /* A faint warm pool low in the frame, from the existing tan accent. */
@@ -74,9 +86,6 @@
     rgba(166, 139, 107, 0.045) 0%,
     rgba(166, 139, 107, 0.02) 40%,
     transparent 72%);
-  animation-name: warmth-drift;
-  animation-duration: 173s;
-  animation-delay: -88s;
 }
 
 /*
@@ -100,27 +109,6 @@
   height: 100%;
 }
 
-/*
- * Each layer drifts on its own long, co-prime period with alternate direction,
- * so their combined state effectively never repeats.
- */
-@keyframes glow-drift {
-  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
-  45% { transform: translate3d(3vw, 2vh, 0) scale(1.04); opacity: 1; }
-  100% { transform: translate3d(-2vw, 4vh, 0) scale(1.02); opacity: 0.9; }
-}
-
-@keyframes arc-drift {
-  0% { transform: translate3d(0, 0, 0) rotate(-3deg) scale(1); opacity: 0.9; }
-  38% { transform: translate3d(2.5vw, 1.5vh, 0) rotate(-1.2deg) scale(1.02); opacity: 1; }
-  100% { transform: translate3d(-3vw, 3vh, 0) rotate(-4.5deg) scale(1.035); opacity: 0.82; }
-}
-
-@keyframes warmth-drift {
-  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.8; }
-  100% { transform: translate3d(-6vw, -4vh, 0) scale(1.08); opacity: 1; }
-}
-
 /* Phones: a narrower frame needs a wider, higher arc so it still spans the screen. */
 @media (max-width: 767px) {
   .glow {
@@ -137,16 +125,17 @@
     height: 100vh;
   }
 
+  .veil {
+    top: -1vh;
+    left: -48vw;
+    width: 196vw;
+    height: 96vh;
+  }
+
   .warmth {
     right: -60vw;
     bottom: -30vh;
     width: 150vw;
     height: 70vh;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .layer {
-    animation: none;
   }
 }
