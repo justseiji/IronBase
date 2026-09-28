@@ -106,23 +106,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Exercise Image */
-.imageWrapper {
-  width: 100%;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  background: var(--color-bg);
-  border: 1px solid rgba(238, 232, 223, 0.08);
-}
-
-.image {
-  width: 100%;
-  height: auto;
-  max-height: 260px;
-  object-fit: cover;
-  display: block;
-}
-
 /* Key Cues */
 .cuesSection {
   display: flex;
@@ -221,10 +204,6 @@
   .body {
     padding: 0 var(--space-4) var(--space-2);
     gap: var(--space-3);
-  }
-
-  .image {
-    max-height: 280px;
   }
 
   .footer {

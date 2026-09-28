@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import formGuides from '../../../data/formGuides';
+import MovementDemo from './MovementDemo';
 import styles from './FormGuide.module.css';
 
 /**
- * FormGuide — minimal visual reference for exercise technique.
- * Shows exercise name, clean high-quality photographic reference,
- * 3-4 concise technique cues, and close actions.
+ * FormGuide — concise technique instruction for an exercise.
+ * Shows the exercise name, a looping side-view demonstration with its four
+ * steps, 3-4 concise technique cues, and close actions.
  *
  * Mobile: smooth bottom sheet / compact modal.
  * Desktop: centered, restrained modal.
@@ -99,15 +100,8 @@ export default function FormGuide({ exerciseId, isOpen, onClose }) {
 
         {/* Scrollable / Content area */}
         <div className={styles.body}>
-          {/* Reference Image */}
-          <div className={styles.imageWrapper}>
-            <img
-              src={guide.image}
-              alt={guide.imageAlt}
-              className={styles.image}
-              loading="eager"
-            />
-          </div>
+          {/* Movement demonstration and steps */}
+          <MovementDemo movementId={guide.movement} steps={guide.steps} name={guide.name} />
 
           {/* Key Cues */}
           <div className={styles.cuesSection}>
