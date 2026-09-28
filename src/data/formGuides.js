@@ -1,13 +1,18 @@
 /**
  * Form guide data for supported exercises.
- * Minimal, high-quality visual reference with key technique cues.
- * Data-driven: exercise ID -> name, image, imageAlt, cues
+ * Data-driven: exercise ID -> name, movement (side-view demonstration),
+ * four steps that match the demonstration's phases, and key technique cues.
  */
 const formGuides = {
   'ex-1': {
     name: 'Back Squat',
-    image: '/images/exercises/squat.jpg',
-    imageAlt: 'Proper barbell back squat technique at parallel depth with upright torso and neutral spine',
+    movement: 'squat',
+    steps: [
+      { title: 'Setup', text: 'Bar on your upper back, feet planted, brace hard.' },
+      { title: 'Descend', text: 'Sit down between your heels, knees tracking your toes.' },
+      { title: 'Bottom', text: 'Hips just below the knees, chest up, still braced.' },
+      { title: 'Drive', text: 'Push the floor away and stand tall.' },
+    ],
     cues: [
       'Brace before descending',
       'Keep the bar over your mid-foot',
@@ -18,8 +23,13 @@ const formGuides = {
 
   'ex-2': {
     name: 'Bench Press',
-    image: '/images/exercises/bench-press.jpg',
-    imageAlt: 'Proper barbell bench press technique with feet planted and bar controlled over chest',
+    movement: 'bench',
+    steps: [
+      { title: 'Setup', text: 'Upper back set, feet planted, bar locked out over your shoulders.' },
+      { title: 'Lower', text: 'Bring the bar down under control toward your lower chest.' },
+      { title: 'Touch', text: 'Light touch on the chest, elbows slightly tucked.' },
+      { title: 'Press', text: 'Drive up and slightly back until it’s over your shoulders.' },
+    ],
     cues: [
       'Set your upper back firmly',
       'Keep your feet planted',
@@ -30,8 +40,13 @@ const formGuides = {
 
   'ex-3': {
     name: 'Deadlift',
-    image: '/images/exercises/deadlift.jpg',
-    imageAlt: 'Proper conventional deadlift setup with bar over mid-foot and flat back',
+    movement: 'deadlift',
+    steps: [
+      { title: 'Setup', text: 'Bar over mid-foot, shins to the bar, flat back.' },
+      { title: 'Pull', text: 'Push the floor away, keeping the bar against your legs.' },
+      { title: 'Lockout', text: 'Hips and knees fully extended, standing tall.' },
+      { title: 'Lower', text: 'Hips back first, then bend the knees once the bar passes them.' },
+    ],
     cues: [
       'Start with the bar over your mid-foot',
       'Brace before pulling',
@@ -42,8 +57,13 @@ const formGuides = {
 
   'ex-4': {
     name: 'Overhead Press',
-    image: '/images/exercises/overhead-press.jpg',
-    imageAlt: 'Proper standing barbell overhead press with vertical forearms and lockout overhead',
+    movement: 'overhead',
+    steps: [
+      { title: 'Rack', text: 'Bar on your front shoulders, forearms vertical, glutes tight.' },
+      { title: 'Press', text: 'Move your head back and press straight up.' },
+      { title: 'Lockout', text: 'Arms locked, bar over mid-foot, head through.' },
+      { title: 'Lower', text: 'Bring it back to your shoulders along the same path.' },
+    ],
     cues: [
       'Squeeze glutes and brace your core',
       'Keep forearms vertical under the bar',
@@ -54,8 +74,13 @@ const formGuides = {
 
   'ex-5': {
     name: 'Barbell Row',
-    image: '/images/exercises/barbell-row.jpg',
-    imageAlt: 'Proper bent-over barbell row with flat back pulling to lower ribcage',
+    movement: 'row',
+    steps: [
+      { title: 'Setup', text: 'Hinge at the hips, flat back, bar hanging under your shoulders.' },
+      { title: 'Pull', text: 'Drive your elbows back and up.' },
+      { title: 'Squeeze', text: 'Bar to your lower ribs, shoulder blades together.' },
+      { title: 'Lower', text: 'Let the bar down under control without moving your torso.' },
+    ],
     cues: [
       'Hinge at hips with a flat back',
       'Pull the bar toward your lower ribcage',
