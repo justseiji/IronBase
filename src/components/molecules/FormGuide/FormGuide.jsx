@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import formGuides from '../../../data/formGuides';
-import MovementDemo from './MovementDemo';
+import FormGuideMedia from './FormGuideMedia';
 import styles from './FormGuide.module.css';
 
 /**
  * FormGuide — concise technique instruction for an exercise.
- * Shows the exercise name, a looping side-view demonstration with its four
- * steps, 3-4 concise technique cues, and close actions.
+ * Shows the exercise name, its start/end demonstration, the steps of the
+ * movement, 3-4 concise technique cues, and close actions. Everything comes
+ * from the exercise's entry in formGuides; nothing here is exercise-specific.
  *
  * Mobile: smooth bottom sheet / compact modal.
  * Desktop: centered, restrained modal.
@@ -100,8 +101,23 @@ export default function FormGuide({ exerciseId, isOpen, onClose }) {
 
         {/* Scrollable / Content area */}
         <div className={styles.body}>
-          {/* Movement demonstration and steps */}
-          <MovementDemo movementId={guide.movement} steps={guide.steps} name={guide.name} />
+          {/* Demonstration */}
+          <FormGuideMedia media={guide.media} name={guide.name} />
+
+          {/* Steps */}
+          {guide.steps?.length > 0 && (
+            <ol className={styles.stepList}>
+              {guide.steps.map((step, index) => (
+                <li key={step.title} className={styles.step}>
+                  <span className={styles.stepNumber} aria-hidden="true">{index + 1}</span>
+                  <span className={styles.stepText}>
+                    <span className={styles.stepTitle}>{step.title}</span>
+                    <span className={styles.stepDetail}>{step.text}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
 
           {/* Key Cues */}
           <div className={styles.cuesSection}>
