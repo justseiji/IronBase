@@ -1,12 +1,14 @@
 /**
- * Form guide data for supported exercises.
- * Data-driven: exercise ID -> name, movement (side-view demonstration),
- * four steps that match the demonstration's phases, and key technique cues.
+ * Form guide data for supported exercises, keyed by exercise ID.
+ * - media: the exercise's free-exercise-db ID; formGuideMedia.js resolves it
+ *   to self-hosted start/end images.
+ * - steps: the movement in order; cues: key technique reminders.
+ * Adding a guide means adding an entry here and its two images, nothing else.
  */
 const formGuides = {
   'ex-1': {
     name: 'Back Squat',
-    movement: 'squat',
+    media: 'Barbell_Full_Squat',
     steps: [
       { title: 'Setup', text: 'Bar on your upper back, feet planted, brace hard.' },
       { title: 'Descend', text: 'Sit down between your heels, knees tracking your toes.' },
@@ -23,7 +25,7 @@ const formGuides = {
 
   'ex-2': {
     name: 'Bench Press',
-    movement: 'bench',
+    media: 'Barbell_Bench_Press_-_Medium_Grip',
     steps: [
       { title: 'Setup', text: 'Upper back set, feet planted, bar locked out over your shoulders.' },
       { title: 'Lower', text: 'Bring the bar down under control toward your lower chest.' },
@@ -40,7 +42,7 @@ const formGuides = {
 
   'ex-3': {
     name: 'Deadlift',
-    movement: 'deadlift',
+    media: 'Barbell_Deadlift',
     steps: [
       { title: 'Setup', text: 'Bar over mid-foot, shins to the bar, flat back.' },
       { title: 'Pull', text: 'Push the floor away, keeping the bar against your legs.' },
@@ -57,7 +59,7 @@ const formGuides = {
 
   'ex-4': {
     name: 'Overhead Press',
-    movement: 'overhead',
+    media: 'Standing_Military_Press',
     steps: [
       { title: 'Rack', text: 'Bar on your front shoulders, forearms vertical, glutes tight.' },
       { title: 'Press', text: 'Move your head back and press straight up.' },
@@ -74,7 +76,7 @@ const formGuides = {
 
   'ex-5': {
     name: 'Barbell Row',
-    movement: 'row',
+    media: 'Bent_Over_Barbell_Row',
     steps: [
       { title: 'Setup', text: 'Hinge at the hips, flat back, bar hanging under your shoulders.' },
       { title: 'Pull', text: 'Drive your elbows back and up.' },
