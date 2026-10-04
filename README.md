@@ -82,7 +82,65 @@ Open `http://localhost:5173`. You should see the IronBase sign-in/sign-up screen
 - `docs/`: Course deliverables — the project proposal, wireframes, design system, weekly increment reports, and reflection journal.
 - `server/`: The Express + PostgreSQL API — `auth.js` (accounts, sessions, password hashing, password reset), `mailer.js` (reset emails via the Gmail API) and `server.js` (exercises/workouts, ownership checks).
 
-## 6. Known issues and next steps
+## 6. Screenshots
+Taken with demo accounts and sample data. Mobile screenshots use a 390 × 844 phone viewport; desktop ones use 1440 × 900.
+
+### Mobile
+
+#### Signing in
+| Sign up | Sign in | Form errors | Offline |
+| --- | --- | --- | --- |
+| <img src="docs/screenshots/mobile/auth-sign-up.jpg" alt="Sign up" width="190"> | <img src="docs/screenshots/mobile/auth-sign-in.jpg" alt="Sign in" width="190"> | <img src="docs/screenshots/mobile/auth-sign-in-errors.jpg" alt="Form errors" width="190"> | <img src="docs/screenshots/mobile/auth-offline.jpg" alt="Offline" width="190"> |
+
+| Forgot password | Check your email | Choose a new password | Reset link expired |
+| --- | --- | --- | --- |
+| <img src="docs/screenshots/mobile/auth-forgot-password.jpg" alt="Forgot password" width="190"> | <img src="docs/screenshots/mobile/auth-check-email.jpg" alt="Check your email" width="190"> | <img src="docs/screenshots/mobile/auth-new-password.jpg" alt="Choose a new password" width="190"> | <img src="docs/screenshots/mobile/auth-link-expired.jpg" alt="Reset link expired" width="190"> |
+
+#### Dashboard
+| Dashboard | Full page | “Workout saved” toast |
+| --- | --- | --- |
+| <img src="docs/screenshots/mobile/dashboard.jpg" alt="Dashboard" width="190"> | <img src="docs/screenshots/mobile/dashboard-full.jpg" alt="Full page" width="190"> | <img src="docs/screenshots/mobile/workout-saved-toast.jpg" alt="“Workout saved” toast" width="190"> |
+
+#### Workout Log
+| New workout | Form guide | “New best” toast | Logged sets |
+| --- | --- | --- | --- |
+| <img src="docs/screenshots/mobile/workout-log.jpg" alt="New workout" width="190"> | <img src="docs/screenshots/mobile/form-guide.jpg" alt="Form guide" width="190"> | <img src="docs/screenshots/mobile/workout-log-new-best.jpg" alt="“New best” toast" width="190"> | <img src="docs/screenshots/mobile/workout-log-sets-full.jpg" alt="Logged sets" width="190"> |
+
+#### Exercise History
+| Exercise History | Full page |
+| --- | --- |
+| <img src="docs/screenshots/mobile/exercise-history.jpg" alt="Exercise History" width="190"> | <img src="docs/screenshots/mobile/exercise-history-full.jpg" alt="Full page" width="190"> |
+
+#### Workout History
+| Workout History | Expanded workout | Delete confirmation |
+| --- | --- | --- |
+| <img src="docs/screenshots/mobile/workout-history.jpg" alt="Workout History" width="190"> | <img src="docs/screenshots/mobile/workout-history-expanded.jpg" alt="Expanded workout" width="190"> | <img src="docs/screenshots/mobile/workout-history-delete-confirm.jpg" alt="Delete confirmation" width="190"> |
+
+#### Account and sync
+| Account menu | Offline | Sign out with unsynced changes |
+| --- | --- | --- |
+| <img src="docs/screenshots/mobile/account-menu.jpg" alt="Account menu" width="190"> | <img src="docs/screenshots/mobile/offline-dashboard.jpg" alt="Offline" width="190"> | <img src="docs/screenshots/mobile/sign-out-unsynced.jpg" alt="Sign out with unsynced changes" width="190"> |
+
+#### New account (empty states)
+| Dashboard | Workout Log | Exercise History | Workout History |
+| --- | --- | --- | --- |
+| <img src="docs/screenshots/mobile/empty-dashboard.jpg" alt="Dashboard" width="190"> | <img src="docs/screenshots/mobile/empty-workout-log.jpg" alt="Workout Log" width="190"> | <img src="docs/screenshots/mobile/empty-exercise-history.jpg" alt="Exercise History" width="190"> | <img src="docs/screenshots/mobile/empty-workout-history.jpg" alt="Workout History" width="190"> |
+
+### Desktop
+
+| Sign up | Dashboard |
+| --- | --- |
+| <img src="docs/screenshots/desktop/auth-sign-up.jpg" alt="Sign up" width="400"> | <img src="docs/screenshots/desktop/dashboard.jpg" alt="Dashboard" width="400"> |
+
+| Workout Log | Exercise History |
+| --- | --- |
+| <img src="docs/screenshots/desktop/workout-log.jpg" alt="Workout Log" width="400"> | <img src="docs/screenshots/desktop/exercise-history.jpg" alt="Exercise History" width="400"> |
+
+| Workout History |
+| --- |
+| <img src="docs/screenshots/desktop/workout-history.jpg" alt="Workout History" width="400"> |
+
+## 7. Known issues and next steps
 **Known issues:**
 - A brand-new device needs a network connection for its first sign-in and initial sync; after that, it works offline using its local copy.
 - If the same workout is edited on two offline devices before either has synced, the last one to reach the server wins — there's no merge.
