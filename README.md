@@ -30,6 +30,8 @@ To get the project running locally from scratch:
    | `CORS_ORIGIN` | `https://app.example.com` | Comma-separated allowed origins, only needed if the web app is served from a different origin than the API |
    | `IRONBASE_API_URL` | `http://localhost:3001` | Where the Vite dev server proxies `/api` requests to |
    | `VITE_API_BASE_URL` | `/api` | Base URL the built web app calls (default: same origin) |
+   | `APP_URL` | `https://app.example.com` | Public address of the web app, used to build password reset links |
+   | `GMAIL_USER`, `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` | see `server/.env.example` | Send password reset emails through the Gmail API (run `npm run gmail-auth` in `server/` to get the refresh token). If unset, reset links are printed to the API console instead |
 
 5. **Database setup and seeding:** No manual schema work is required — the API creates every table it needs the first time it starts, against whatever database `DATABASE_URL` points to (default `postgres://postgres:postgres@localhost:5432/ironbase`). A default library of five exercises (Squat, Bench Press, Deadlift, Overhead Press, Barbell Row) is seeded automatically the first time the `exercises` table is empty. Each browser also keeps its own offline copy of the signed-in account's data locally (PGlite, via IndexedDB) — nothing to install for that either.
 
@@ -60,6 +62,8 @@ Open `http://localhost:5173`. You should see the IronBase sign-in/sign-up screen
 | POST | `/auth/signup` | Create an account (email, username, password) and start a session |
 | POST | `/auth/signin` | Sign in with email-or-username + password, start a session |
 | POST | `/auth/signout` | End the current session |
+| POST | `/auth/forgot` | Email a password reset link (always responds the same, whether or not the email has an account) |
+| POST | `/auth/reset` | Set a new password using a reset link's token |
 | GET | `/auth/me` | Return the signed-in user, or `null` |
 | GET | `/exercises` | List the shared exercise library |
 | GET | `/workouts` | List the signed-in user's workouts (including sets) |
@@ -75,23 +79,16 @@ Open `http://localhost:5173`. You should see the IronBase sign-in/sign-up screen
 - `src/repositories/`: The only code that reads and writes local workout/exercise data.
 - `src/services/`: The API client, auth calls, the background sync engine, and analytics/PR/e1RM calculations.
 - `src/index.css`: Design tokens, including the shared motion system (`--motion-*`, `--ease-*`, `motion-*` classes).
-- `server/`: The Express + PostgreSQL API — `auth.js` (accounts, sessions, password hashing) and `server.js` (exercises/workouts, ownership checks).
+- `docs/`: Course deliverables — the project proposal, wireframes, design system, weekly increment reports, and reflection journal.
+- `server/`: The Express + PostgreSQL API — `auth.js` (accounts, sessions, password hashing, password reset), `mailer.js` (reset emails via the Gmail API) and `server.js` (exercises/workouts, ownership checks).
 
-## 6. Screenshots
-> **Note:** Replace these placeholder links with actual images of the app once hosted or committed.
-
-![Sign in](docs/screenshots/auth.png)
-![Dashboard Overview](docs/screenshots/dashboard.png)
-![Workout Logging](docs/screenshots/workout_log.png)
-
-## 7. Known issues and next steps
+## 6. Known issues and next steps
 **Known issues:**
 - A brand-new device needs a network connection for its first sign-in and initial sync; after that, it works offline using its local copy.
 - If the same workout is edited on two offline devices before either has synced, the last one to reach the server wins — there's no merge.
 - Some complex charts may experience minor layout clipping on extremely narrow screens (under 320px width).
 
 **Next steps:**
-- Password reset by email.
 - Let users create, save, and share custom workout templates.
 - Conflict resolution for the two-offline-devices case above, rather than last-write-wins.
 

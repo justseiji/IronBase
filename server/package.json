@@ -1,17 +1,14 @@
 {
-  "name": "server",
+  "name": "ironbase-server",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Express + PostgreSQL API for IronBase",
+  "type": "module",
   "scripts": {
     "start": "node --env-file-if-exists=.env server.js",
     "dev": "node --env-file-if-exists=.env --watch server.js",
     "gmail-auth": "node --env-file-if-exists=.env scripts/gmail-auth.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",

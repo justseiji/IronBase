@@ -1,7 +1,7 @@
 # Week of September 27, 2026
 
 **What I worked on:**
-Added real accounts (email/username/password, sessions, password hashing) and multi-device sync on top of the existing PGlite + PostgreSQL setup, then redesigned all five screens with a shared motion system. Along the way I fixed several bugs that were already in the sync path, and brought `README.md`, `SECURITY-CHECKLIST.md`, `AI-USAGE.md`, and `REPORT.md` up to date with the current architecture.
+Added real accounts (email/username/password, sessions, password hashing) and multi-device sync on top of the existing PGlite + PostgreSQL setup, then redesigned all five screens with a shared motion system. Along the way I fixed several bugs that were already in the sync path, and brought `README.md`, `SECURITY-CHECKLIST.md`, `AI-USAGE.md`, and `docs/reports/week-02.md` up to date with the current architecture.
 
 **What clicked:**
 Scoping ownership at the database query level (`WHERE user_id = $1` on every workout query, not just checking after fetching) made the "can account B touch account A's data" question easy to actually test and trust, instead of just assuming the code was right. Giving each account its own local PGlite database per device also made a lot of the "what happens on sign-out / sign-in as someone else" edge cases disappear, rather than needing extra logic to scrub shared local storage.
