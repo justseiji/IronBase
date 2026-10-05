@@ -16,7 +16,7 @@ IronBase was built with AI assistance. This file is my account of how: what I as
 - **Date / tool:** 2026-09-23, Gemini 3.1 Pro
 - **What I asked for:** Build the first version of IronBase from my wireframes and design system: React + Vite, CSS Modules, an atoms/molecules/organisms component structure, and the four screens (Dashboard, Workout Log, Exercise History, Workout History).
 - **What it gave back:** A working Vite app with the four screens, `localStorage` storage with seeded exercises, and a header nav that becomes a bottom nav on phones.
-- **What I kept / changed and why:** I kept the structure because it matched my component plan. I set the `:root` design tokens myself (section 3.1) so every component uses my palette and 8px spacing instead of the values the AI chose.
+- **What I kept / changed and why:** I kept the structure because it matched my component plan. I wrote the base CSS myself, including the `:root` design tokens (section 3.1), so every component uses my palette and 8px spacing instead of values the AI chose. Gemini and Claude Code enhanced that CSS later.
 - **Commit:** [`092904e`](https://github.com/justseiji/IronBase/commit/092904e)
 
 ### Entry 2: Charts, e1RM and PRs
@@ -115,7 +115,7 @@ I designed IronBase's look before any screens were built, in two course document
 - [`docs/wireframes.md`](docs/wireframes.md): the screen map (Dashboard as home base, Workout Log, Exercise History, Workout History), one box sketch per screen for desktop and phone, and the navigation rule. The header nav becomes a bottom nav on phones, and it always has the same four destinations.
 - [`docs/design-system.pdf`](docs/design-system.pdf): the colour tokens, type scale, 8px spacing rule, reusable components (atoms, molecules, organisms), responsive plan and accessibility checks.
 
-In code, the design system lives as CSS custom properties in `:root` of [`src/index.css`](src/index.css). Every CSS Module uses these through `var(--…)` instead of hard-coding values:
+In code, the design system lives as CSS custom properties in `:root` of [`src/index.css`](src/index.css). I wrote this base CSS myself, and Gemini and Claude Code enhanced it later (see the timeline below). Every CSS Module uses these tokens through `var(--…)` instead of hard-coding values. My base tokens:
 
 ```css
 :root {
@@ -144,20 +144,20 @@ Why I made these choices:
 - **Mobile first.** Below 768px everything stacks into one column and navigation moves to the bottom bar. Touch targets are at least 44px so they're easy to hit with a sweaty thumb. At 768px and above the horizontal header returns and the Dashboard and Exercise History use two columns. At 375px nothing scrolls sideways.
 - **Atomic components.** I planned the UI as atoms (Button, form inputs), molecules (ExerciseSelector, LoggedSetRow) and organisms (HeaderNav, MobileBottomNav), so each piece is built once and reused. That is how `src/components/` is organised.
 
-#### How the design grew: my base first, then Claude built on it
-I made the design base. Claude Code came in later and took it further, but it built *on* my foundation instead of replacing it. You can check every step in the git history:
+#### How the design grew: my base CSS first, then Gemini and Claude enhanced it
+I wrote the base CSS. Gemini and then Claude Code enhanced it, but both built *on* my foundation instead of replacing it. You can check every step in the git history:
 
 | When | Who | What | Commit |
 | --- | --- | --- | --- |
 | Before any code | Me | Wireframes and design system (M6A2, M6A3): palette, type scale, spacing rule, component plan, responsive and accessibility rules | in [`092904e`](https://github.com/justseiji/IronBase/commit/092904e) (`docs/`) |
-| 2026-09-23 | Me (Gemini helped write some component code) | First build from that design: the `:root` tokens, the atoms/molecules/organisms structure, CSS Modules, desktop header that becomes a phone bottom nav | [`092904e`](https://github.com/justseiji/IronBase/commit/092904e) |
-| 2026-09-23 | Me (with Gemini) | Week 1 polish: charts, e1RM and PRs, Apple-like spacing, reduced-motion support, mobile header fix; added the positive/negative colours and larger spacing steps | [`97361a5`](https://github.com/justseiji/IronBase/commit/97361a5), [`a9ec27e`](https://github.com/justseiji/IronBase/commit/a9ec27e), [`275f9b6`](https://github.com/justseiji/IronBase/commit/275f9b6) |
+| 2026-09-23 | Me (Gemini helped write some component code) | First build from that design: my base CSS and `:root` tokens, the atoms/molecules/organisms structure, CSS Modules, desktop header that becomes a phone bottom nav | [`092904e`](https://github.com/justseiji/IronBase/commit/092904e) |
+| 2026-09-23 | Gemini | Enhanced my CSS during the week 1 polish: Apple-like spacing, reduced-motion support, the mobile header fix, positive/negative colours and larger spacing steps (alongside the charts, e1RM and PRs) | [`97361a5`](https://github.com/justseiji/IronBase/commit/97361a5), [`a9ec27e`](https://github.com/justseiji/IronBase/commit/a9ec27e), [`275f9b6`](https://github.com/justseiji/IronBase/commit/275f9b6) |
 | 2026-09-27 | Claude Code | Enhanced the UI: a motion system (`--motion-*`, `--ease-*`, `--stagger-step`, `--press-scale`), extra shades (`--color-surface-raised`, `--color-accent-soft`, hairlines, `--color-text-faint`), animated numbers, route transitions, the new sign-in screen, and a refresh of all screens | [`5d11f68`](https://github.com/justseiji/IronBase/commit/5d11f68) |
 | 2026-09-28 | Claude Code | Atmospheric haze and floating dust behind every screen | [`bdbf0b7`](https://github.com/justseiji/IronBase/commit/bdbf0b7), [`9f7772c`](https://github.com/justseiji/IronBase/commit/9f7772c) |
 
-Claude's enhancements kept my design base intact. Compare `src/index.css` in [`092904e`](https://github.com/justseiji/IronBase/commit/092904e) with today: my core colours (`--color-bg`, `--color-surface`, `--color-text`, `--color-primary`, `--color-accent`), the 8px spacing scale, the font and the corner radii still have the same values. Every new screen Claude made, including the sign-in page, uses my tokens and component structure. So the look you see is still my design, with motion and atmosphere layered on top.
+Gemini's and Claude's enhancements kept my base CSS intact. Compare `src/index.css` in [`092904e`](https://github.com/justseiji/IronBase/commit/092904e) with today: my core colours (`--color-bg`, `--color-surface`, `--color-text`, `--color-primary`, `--color-accent`), the 8px spacing scale, the font and the corner radii still have the same values. Every new screen added later, including Claude's sign-in page, uses my tokens and component structure. So the look you see is still my design, with motion and atmosphere layered on top.
 
-To be clear about what isn't mine: the motion system, the extra shades listed above, the animations and the haze/dust background were added by Claude Code.
+To be clear about what isn't mine: the Gemini additions in the week 1 row above, and the motion system, extra shades, animations and haze/dust background added by Claude Code.
 
 ### 3.2 Mine: the estimated 1-rep max (e1RM) calculation
 [`src/services/e1rmService.js`](src/services/e1rmService.js). First written in [`97361a5`](https://github.com/justseiji/IronBase/commit/97361a5), moved into its own service file in [`1b404b9`](https://github.com/justseiji/IronBase/commit/1b404b9).
