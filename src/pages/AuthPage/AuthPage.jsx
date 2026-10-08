@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../components/atoms/Button/Button';
+import LogoMark from '../../components/atoms/LogoMark/LogoMark';
 import { useAuth } from '../../auth/useAuth';
 import { isKnownDevice, requestPasswordReset } from '../../services/authService';
 import { prefersReducedMotion } from '../../hooks/useReducedMotion';
@@ -348,7 +349,7 @@ export default function AuthPage() {
       <div className={styles.layout}>
         <section className={styles.intro}>
           <div className={styles.wordmark}>
-            <span className={styles.mark} aria-hidden="true" />
+            <LogoMark className={styles.mark} />
             IronBase
           </div>
           <h1 key={mode} ref={titleRef} tabIndex={-1} className={styles.title}>
