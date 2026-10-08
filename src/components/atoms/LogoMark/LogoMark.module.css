@@ -1,0 +1,16 @@
+.mark {
+  display: block;
+  flex-shrink: 0;
+}
+
+.tile {
+  fill: var(--color-surface);
+}
+
+.plates {
+  fill: var(--color-accent);
+}
+
+.bar {
+  fill: #B91C1C;
+}

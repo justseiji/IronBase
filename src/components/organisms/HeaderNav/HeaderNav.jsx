@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import NavItem from '../../molecules/NavItem/NavItem';
+import LogoMark from '../../atoms/LogoMark/LogoMark';
 import SyncStatusIndicator from '../../molecules/SyncStatusIndicator/SyncStatusIndicator';
 import AccountMenu from '../AccountMenu/AccountMenu';
 import { ROUTES, routeIndex } from '../../../layout/navigation';
@@ -29,7 +30,7 @@ export default function HeaderNav() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <Link to="/" className={styles.brand} aria-label="IronBase home">
-          <span className={styles.mark} aria-hidden="true" />
+          <LogoMark className={styles.mark} />
           <span>IronBase</span>
         </Link>
 
