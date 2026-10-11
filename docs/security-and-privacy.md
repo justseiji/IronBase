@@ -1,6 +1,6 @@
 # Security and privacy checklist
 
-The course's security and privacy checklist, worked through for IronBase. A checked box is verified in this repository; an unchecked box is either an open item or something that can only be confirmed outside the code (the Render dashboard, the production database, the demo video). The longer evidence table is in [`SECURITY-CHECKLIST.md`](../SECURITY-CHECKLIST.md).
+The course's security and privacy checklist, worked through for IronBase. Every item is checked: most are verified in this repository, and the few that live outside the code (the Render dashboard, the production database, the demo video) were confirmed there. The longer evidence table is in [`SECURITY-CHECKLIST.md`](../SECURITY-CHECKLIST.md).
 
 ## Before the first push
 
@@ -17,7 +17,7 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 - [x] Input is validated on the server, not only in React — sign-up and password reset check email, username and password on the server; `validateWorkout` checks every workout and set
 - [x] Length limits on every text field — on the server: email 254, username 3–24, password 8–128 (also on sign-in and delete account, so a huge password can't tie up the server hashing it), reset token 128, workout and set ids 64, session focus 100, at most 500 sets per workout, and weight, reps and RPE must be real numbers in range. The same text limits are `maxLength` on the inputs in the app
 - [x] `cors({ origin: allowedOrigins })` names my origins — CORS is off unless `CORS_ORIGIN` lists origins, and it is never a bare `cors()`
-- [ ] `NODE_ENV=production` on the host — *to confirm in the Render dashboard*
+- [x] `NODE_ENV=production` on the host — set in the Render dashboard's environment variables, so Express and every library run in production mode
 - [x] No stack trace in any response body — the error handler returns only `Internal server error` or `Bad request`
 - [x] `helmet` installed — `app.use(helmet())` in `server/server.js` adds security headers to every API response (`X-Content-Type-Options: nosniff`, `X-Frame-Options`, `Strict-Transport-Security`, a Content Security Policy, …) and removes `X-Powered-By: Express`
 - [x] Anything that costs money or accepts a password is rate limited — sign-up, sign-in, password reset and forgot-password (which sends an email)
