@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import pool, { initDb } from './db.js';
 import { authRouter, requireAuth } from './auth.js';
 
@@ -17,6 +18,9 @@ const allowedOrigins = (process.env.CORS_ORIGIN || '').split(',').map(s => s.tri
 if (allowedOrigins.length > 0) {
   app.use(cors({ origin: allowedOrigins, credentials: true }));
 }
+
+// Security headers on every response (no sniffing, no framing, HSTS, …).
+app.use(helmet());
 
 app.use(express.json({ limit: '1mb' }));
 

@@ -19,7 +19,7 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 - [x] `cors({ origin: allowedOrigins })` names my origins — CORS is off unless `CORS_ORIGIN` lists origins, and it is never a bare `cors()`
 - [ ] `NODE_ENV=production` on the host — *to confirm in the Render dashboard*
 - [x] No stack trace in any response body — the error handler returns only `Internal server error` or `Bad request`
-- [ ] `helmet` installed — not yet
+- [x] `helmet` installed — `app.use(helmet())` in `server/server.js` adds security headers to every API response (`X-Content-Type-Options: nosniff`, `X-Frame-Options`, `Strict-Transport-Security`, a Content Security Policy, …) and removes `X-Powered-By: Express`
 - [x] Anything that costs money or accepts a password is rate limited — sign-up, sign-in, password reset and forgot-password (which sends an email)
 - [x] Passwords are hashed and never logged — hashed with **scrypt** (Node's built-in, at least as strong as bcrypt) rather than bcrypt; switching now would lock out every existing account
 - [x] Every route that touches somebody's data has the ownership check in the query — `WHERE user_id = $1` / `AND user_id = $2`, not an `if` above it
@@ -37,6 +37,5 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 ## Tradeoffs I knowingly accepted
 
 - **scrypt instead of bcrypt.** It meets the same goal, and changing the hash format now would break every existing login.
-- **No `helmet` yet.** The API only returns JSON and the pages are served by Vercel, so its headers add less here than on a server that renders HTML.
 - **Deleting an account clears only the device it's done on.** Another device signed in to the same account is signed out the next time it syncs, but its local copy stays until someone signs out there.
 - **Local development connects as the `postgres` superuser.** Production should use a least-privilege database user.
