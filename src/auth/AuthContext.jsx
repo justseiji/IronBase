@@ -3,7 +3,7 @@ import { AuthContext } from './useAuth';
 import {
   getStoredAccount, storeAccount, clearStoredAccount,
   signIn as apiSignIn, signUp as apiSignUp, resetPassword as apiResetPassword,
-  fetchCurrentUser, endServerSession,
+  fetchCurrentUser, endServerSession, deleteServerAccount,
 } from '../services/authService';
 
 const AUTHENTICATORS = { signUp: apiSignUp, signIn: apiSignIn, reset: apiResetPassword };
@@ -17,6 +17,7 @@ import { draftKeyFor } from '../utils/drafts';
 const PENDING_SIGNOUT_KEY = 'ironbase-pending-signout';
 
 const EXPIRED_NOTICE = 'Your session ended. Sign in again to keep syncing.';
+const DELETED_NOTICE = 'Your account and all of its data have been deleted.';
 
 function readFlag(key) {
   try { return localStorage.getItem(key) === '1'; } catch { return false; }
@@ -139,9 +140,25 @@ export function AuthProvider({ children }) {
     setState({ status: 'signedOut', user: null, notice: null });
   }, [state.user]);
 
+  /**
+   * Permanently delete the account on the server, then remove its data from
+   * this device. Throws (leaving everything in place) if the server refuses.
+   */
+  const deleteAccount = useCallback(async (password) => {
+    const user = state.user;
+    await deleteServerAccount(password);
+    stopSyncEngine();
+    if (user) {
+      await deleteUserDb(user.id);
+      try { localStorage.removeItem(draftKeyFor(user.id)); } catch { /* ignore */ }
+    }
+    clearStoredAccount();
+    setState({ status: 'signedOut', user: null, notice: DELETED_NOTICE });
+  }, [state.user]);
+
   const value = useMemo(() => ({
-    ...state, authenticate, enter, prepareSignOut, signOut,
-  }), [state, authenticate, enter, prepareSignOut, signOut]);
+    ...state, authenticate, enter, prepareSignOut, signOut, deleteAccount,
+  }), [state, authenticate, enter, prepareSignOut, signOut, deleteAccount]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

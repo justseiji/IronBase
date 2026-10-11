@@ -30,7 +30,8 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 - [x] No real classmates' names, numbers, emails or photos anywhere — none in the code or seed data; the only email shown in the demo video is my own
 - [x] Seed data is invented — the only seed data is the default exercise list (exercise names and muscle groups)
 - [ ] If real people tested the app, their data is deleted before submitting — *to confirm in the production database*
-- [ ] The app says what it collects — not yet; IronBase stores an email, a username, a password hash and workout logs
+- [x] The app says what it collects — the sign-up screen and the account menu both say IronBase stores an email, a username, a hashed password and workout logs, and nothing else
+- [x] Users can delete their own data — **Delete account** in the account menu asks for the password again, then removes the account, its workouts and sets, its sessions and reset links from the server, and the account's local database from that device
 - [x] Any face in a screenshot is stock, generated, or mine — the form-guide photos come from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (public domain), credited in `public/media/exercises/README.md`
 
 ## Tradeoffs I knowingly accepted
@@ -38,4 +39,5 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 - **scrypt instead of bcrypt.** It meets the same goal, and changing the hash format now would break every existing login.
 - **No `helmet` yet.** The API only returns JSON and the pages are served by Vercel, so its headers add less here than on a server that renders HTML.
 - **No maximum length on workout text.** A limit added this late could reject workouts the app already saves; the request body is still capped at 1 MB.
+- **Deleting an account clears only the device it's done on.** Another device signed in to the same account is signed out the next time it syncs, but its local copy stays until someone signs out there.
 - **Local development connects as the `postgres` superuser.** Production should use a least-privilege database user.

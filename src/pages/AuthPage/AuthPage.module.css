@@ -374,6 +374,14 @@
   60% { transform: translateX(3px); }
 }
 
+.privacy {
+  padding-top: var(--space-2);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--color-text-faint);
+}
+
 .switch {
   margin-top: var(--space-3);
   text-align: center;
