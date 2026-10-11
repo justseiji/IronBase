@@ -8,7 +8,7 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 - [x] `git ls-files | grep -iE '\.env$|\.pem$|id_rsa'` prints nothing — and no such file appears anywhere in the git history
 - [x] `.env.example` is committed, with placeholder values only — `server/.env.example`
 - [x] No connection string, key or password anywhere in the repository — the only literal connection string is the local-dev fallback in `server/db.js` (the default Postgres superuser on a developer's own machine)
-- [ ] No connection string, key or password in a screenshot — *to confirm by looking through `docs/screenshots/`*
+- [x] No connection string, key or password in a screenshot — all 32 in `docs/screenshots/` were retaken from a local test server with fictional `@example.com` accounts and checked one by one; password fields are empty or masked
 - [x] No `student.json`, and no student number or email of mine or anyone else's — the only addresses are fictional `.test` test accounts
 
 ## The application
