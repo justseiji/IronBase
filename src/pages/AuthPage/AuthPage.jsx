@@ -104,7 +104,7 @@ function validate(mode, values) {
   return errors;
 }
 
-function Field({ label, error, hint, type = 'text', value, onChange, autoComplete, inputRef, trailing, inputMode, autoCapitalize = 'none' }) {
+function Field({ label, error, hint, type = 'text', value, onChange, autoComplete, inputRef, trailing, inputMode, autoCapitalize = 'none', maxLength }) {
   const id = useId();
   const messageId = `${id}-message`;
   const message = error || hint;
@@ -123,6 +123,7 @@ function Field({ label, error, hint, type = 'text', value, onChange, autoComplet
           autoCorrect="off"
           spellCheck={false}
           inputMode={inputMode}
+          maxLength={maxLength}
           placeholder=" "
           aria-invalid={error ? true : undefined}
           aria-describedby={message ? messageId : undefined}
@@ -380,6 +381,7 @@ export default function AuthPage() {
                 autoComplete="email"
                 value={values.email}
                 onChange={update('email')}
+                maxLength={254}
                 error={errors.email}
               />
             </Reveal>
@@ -391,6 +393,7 @@ export default function AuthPage() {
                 autoComplete="username"
                 value={values.identifier}
                 onChange={update('identifier')}
+                maxLength={254}
                 error={errors.identifier}
               />
             </Reveal>
@@ -402,6 +405,7 @@ export default function AuthPage() {
                 autoComplete="username"
                 value={values.username}
                 onChange={update('username')}
+                maxLength={24}
                 error={errors.username}
               />
             </Reveal>
@@ -414,6 +418,7 @@ export default function AuthPage() {
                 autoComplete={passwordIsNew ? 'new-password' : 'current-password'}
                 value={values.password}
                 onChange={update('password')}
+                maxLength={128}
                 error={errors.password}
                 hint={passwordIsNew ? 'At least 8 characters.' : undefined}
                 trailing={

@@ -15,7 +15,7 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 
 - [x] Every SQL query is parameterised — every query in `server/db.js`, `server/auth.js` and `server/server.js` uses `$1`, `$2`, … placeholders
 - [x] Input is validated on the server, not only in React — sign-up and password reset check email, username and password on the server; `validateWorkout` checks every workout and set
-- [ ] Length limits on every text field — email (254), username (3–24) and password (8–128) are limited; workout text such as session focus is type-checked but has no maximum length yet
+- [x] Length limits on every text field — on the server: email 254, username 3–24, password 8–128 (also on sign-in and delete account, so a huge password can't tie up the server hashing it), reset token 128, workout and set ids 64, session focus 100, at most 500 sets per workout, and weight, reps and RPE must be real numbers in range. The same text limits are `maxLength` on the inputs in the app
 - [x] `cors({ origin: allowedOrigins })` names my origins — CORS is off unless `CORS_ORIGIN` lists origins, and it is never a bare `cors()`
 - [ ] `NODE_ENV=production` on the host — *to confirm in the Render dashboard*
 - [x] No stack trace in any response body — the error handler returns only `Internal server error` or `Bad request`
@@ -38,6 +38,5 @@ The course's security and privacy checklist, worked through for IronBase. A chec
 
 - **scrypt instead of bcrypt.** It meets the same goal, and changing the hash format now would break every existing login.
 - **No `helmet` yet.** The API only returns JSON and the pages are served by Vercel, so its headers add less here than on a server that renders HTML.
-- **No maximum length on workout text.** A limit added this late could reject workouts the app already saves; the request body is still capped at 1 MB.
 - **Deleting an account clears only the device it's done on.** Another device signed in to the same account is signed out the next time it syncs, but its local copy stays until someone signs out there.
 - **Local development connects as the `postgres` superuser.** Production should use a least-privilege database user.

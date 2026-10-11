@@ -90,6 +90,8 @@ export default function WorkoutLogPage({ userId, exercises, workoutHistory = [],
 
   function handleAddSet() {
     if (!selectedExerciseId || !weight || Number(weight) <= 0 || !reps || Number(reps) <= 0) return;
+    // Same upper bounds the server enforces, so a set that saves here always syncs.
+    if (Number(weight) > 10000 || Number(reps) > 10000 || (rpe && !(Number(rpe) >= 0 && Number(rpe) <= 100))) return;
 
     const exerciseName = exercises.find(e => e.id === selectedExerciseId)?.name || '';
     const w = cleanNumber(weight);

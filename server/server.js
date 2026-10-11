@@ -22,16 +22,39 @@ app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/auth', authRouter);
 
-// Validation middleware
+// Validation middleware. The limits are generous on purpose: they stop
+// oversized or malformed payloads without rejecting any workout the app can
+// produce, including ones from before session focus became a fixed list.
+const MAX_ID_LENGTH = 64;
+const MAX_SESSION_FOCUS_LENGTH = 100;
+const MAX_SETS_PER_WORKOUT = 500;
+const MAX_WEIGHT = 10000;
+const MAX_REPS = 10000;
+// RPE is meant to be 1–10, but older versions didn't stop larger values being typed.
+const MAX_RPE = 100;
+
+function isShortString(value, max) {
+  return typeof value === 'string' && value.length > 0 && value.length <= max;
+}
+
+function isNumberInRange(value, max) {
+  const n = Number(value);
+  return value !== '' && value != null && Number.isFinite(n) && n >= 0 && n <= max;
+}
+
 function validateWorkout(req, res, next) {
   const { id, date, sessionFocus, sets } = req.body;
-  if (!id || typeof id !== 'string') return res.status(400).json({ error: 'Invalid or missing id' });
-  if (!date || isNaN(Date.parse(date))) return res.status(400).json({ error: 'Invalid or missing date' });
-  if (!sessionFocus || typeof sessionFocus !== 'string') return res.status(400).json({ error: 'Invalid or missing sessionFocus' });
-  if (!Array.isArray(sets)) return res.status(400).json({ error: 'Sets must be an array' });
+  if (!isShortString(id, MAX_ID_LENGTH)) return res.status(400).json({ error: 'Invalid or missing id' });
+  if (!isShortString(date, 32) || isNaN(Date.parse(date))) return res.status(400).json({ error: 'Invalid or missing date' });
+  if (!isShortString(sessionFocus, MAX_SESSION_FOCUS_LENGTH)) return res.status(400).json({ error: 'Invalid or missing sessionFocus' });
+  if (!Array.isArray(sets) || sets.length > MAX_SETS_PER_WORKOUT) return res.status(400).json({ error: 'Sets must be an array' });
 
   for (const set of sets) {
-    if (!set.id || typeof set.id !== 'string' || !set.exerciseId || set.weight == null || set.reps == null) {
+    if (
+      !set || !isShortString(set.id, MAX_ID_LENGTH) || !isShortString(set.exerciseId, MAX_ID_LENGTH)
+      || !isNumberInRange(set.weight, MAX_WEIGHT) || !isNumberInRange(set.reps, MAX_REPS)
+      || (set.rpe && !isNumberInRange(set.rpe, MAX_RPE))
+    ) {
       return res.status(400).json({ error: 'Invalid set object in array' });
     }
   }
@@ -164,6 +187,7 @@ app.post('/api/workouts', requireAuth, validateWorkout, async (req, res, next) =
 // DELETE workout (Soft delete, owner only)
 app.delete('/api/workouts/:id', requireAuth, async (req, res, next) => {
   const { id } = req.params;
+  if (id.length > MAX_ID_LENGTH) return res.status(404).json({ error: 'Workout not found' });
   const client = await pool.connect();
 
   try {

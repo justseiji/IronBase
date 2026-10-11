@@ -154,6 +154,7 @@ export default function AccountMenu() {
                 label="Password"
                 type="password"
                 autoComplete="current-password"
+                maxLength={128}
                 value={deleteState.password}
                 onChange={e => setDeleteState(s => ({ ...s, password: e.target.value, error: null }))}
               />

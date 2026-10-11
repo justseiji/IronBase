@@ -241,6 +241,10 @@ authRouter.post('/signin', requireJson, rateLimit, async (req, res, next) => {
   if (!identifier || !password) {
     return res.status(400).json({ error: 'Enter your email or username and password.' });
   }
+  // Nothing longer can belong to an account, and hashing a huge password is slow.
+  if (identifier.length > 254 || password.length > PASSWORD_MAX) {
+    return res.status(401).json({ error: 'Invalid email, username, or password.' });
+  }
 
   try {
     const column = identifier.includes('@') ? 'email' : 'username';
@@ -280,6 +284,7 @@ authRouter.post('/signout', async (req, res, next) => {
 authRouter.post('/delete-account', requireJson, rateLimit, requireAuth, async (req, res, next) => {
   const password = typeof req.body.password === 'string' ? req.body.password : '';
   if (!password) return res.status(400).json({ error: 'Enter your password.', field: 'password' });
+  if (password.length > PASSWORD_MAX) return res.status(403).json({ error: 'Incorrect password.', field: 'password' });
 
   let client;
   try {
@@ -351,7 +356,7 @@ authRouter.post('/reset', requireJson, rateLimit, async (req, res, next) => {
   const token = typeof req.body.token === 'string' ? req.body.token : '';
   const password = typeof req.body.password === 'string' ? req.body.password : '';
 
-  if (!token) return res.status(400).json({ error: INVALID_RESET_LINK, code: 'invalid_token' });
+  if (!token || token.length > 128) return res.status(400).json({ error: INVALID_RESET_LINK, code: 'invalid_token' });
   if (password.length < PASSWORD_MIN || password.length > PASSWORD_MAX) {
     return res.status(400).json({ error: `Password must be at least ${PASSWORD_MIN} characters.`, field: 'password' });
   }
