@@ -275,6 +275,37 @@ authRouter.post('/signout', async (req, res, next) => {
   }
 });
 
+// Permanently removes the account and everything it owns. The password is
+// asked for again so a stolen session or a stray tap can't delete an account.
+authRouter.post('/delete-account', requireJson, rateLimit, requireAuth, async (req, res, next) => {
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
+  if (!password) return res.status(400).json({ error: 'Enter your password.', field: 'password' });
+
+  let client;
+  try {
+    const result = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+    if (!result.rows[0] || !(await verifyPassword(password, result.rows[0].password_hash))) {
+      return res.status(403).json({ error: 'Incorrect password.', field: 'password' });
+    }
+
+    client = await pool.connect();
+    await client.query('BEGIN');
+    // Sets go with their workouts, and sessions and reset links go with the
+    // user, through ON DELETE CASCADE.
+    await client.query('DELETE FROM workouts WHERE user_id = $1', [req.user.id]);
+    await client.query('DELETE FROM users WHERE id = $1', [req.user.id]);
+    await client.query('COMMIT');
+
+    res.clearCookie(SESSION_COOKIE, cookieOptions(req));
+    res.json({ success: true });
+  } catch (err) {
+    if (client) await client.query('ROLLBACK').catch(() => {});
+    next(err);
+  } finally {
+    client?.release();
+  }
+});
+
 // ─── Password reset ───
 
 const RESET_TTL_MS = 30 * 60 * 1000;

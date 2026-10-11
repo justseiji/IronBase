@@ -459,6 +459,14 @@ export default function AuthPage() {
             {submitLabel}
           </Button>
 
+          <Reveal open={mode === 'signUp'}>
+            <p className={styles.privacy}>
+              IronBase stores your email, username, a hashed password and the workouts you log. Nothing else.
+              {' '}Your email is only used to sign in and reset your password. You can delete your account
+              and all of its data at any time from the account menu.
+            </p>
+          </Reveal>
+
           <p className={styles.switch}>
             {copy.switchPrompt && <><span>{copy.switchPrompt}</span>{' '}</>}
             <button type="button" className={styles.switchButton} onClick={() => goTo(copy.switchTo)} disabled={status !== 'idle'}>

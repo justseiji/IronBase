@@ -1,7 +1,7 @@
 import Label from '../Label/Label';
 import styles from './TextInput.module.css';
 
-export default function TextInput({ id, label, value, onChange, type = 'text', placeholder = '', className = '' }) {
+export default function TextInput({ id, label, value, onChange, type = 'text', placeholder = '', className = '', autoComplete }) {
   return (
     <div className={`${styles.wrapper} ${className}`}>
       <Label htmlFor={id}>{label}</Label>
@@ -11,6 +11,7 @@ export default function TextInput({ id, label, value, onChange, type = 'text', p
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        autoComplete={autoComplete}
         className={styles.input}
       />
     </div>

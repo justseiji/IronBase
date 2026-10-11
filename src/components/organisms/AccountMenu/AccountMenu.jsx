@@ -1,8 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import Button from '../../atoms/Button/Button';
+import TextInput from '../../atoms/TextInput/TextInput';
 import { useAuth } from '../../../auth/useAuth';
 import useSyncStatus from '../../../hooks/useSyncStatus';
 import styles from './AccountMenu.module.css';
+
+const IDLE_DELETE = { step: 'idle', password: '', error: null }; // idle | confirm | deleting
 
 function syncDetail({ status, pending, lastSyncedAt }) {
   const changes = `${pending} change${pending !== 1 ? 's' : ''}`;
@@ -17,17 +20,20 @@ function syncDetail({ status, pending, lastSyncedAt }) {
 }
 
 export default function AccountMenu() {
-  const { user, prepareSignOut, signOut } = useAuth();
+  const { user, prepareSignOut, signOut, deleteAccount } = useAuth();
   const sync = useSyncStatus();
   const [open, setOpen] = useState(false);
   const [signOutState, setSignOutState] = useState({ step: 'idle', unsynced: 0 }); // idle | checking | confirm | leaving
+  const [deleteState, setDeleteState] = useState(IDLE_DELETE);
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
   const panelId = useId();
+  const passwordId = useId();
 
   function close({ restoreFocus = true } = {}) {
     setOpen(false);
     setSignOutState(s => (s.step === 'leaving' ? s : { step: 'idle', unsynced: 0 }));
+    setDeleteState(s => (s.step === 'deleting' ? s : IDLE_DELETE));
     if (restoreFocus) triggerRef.current?.focus();
   }
 
@@ -69,6 +75,21 @@ export default function AccountMenu() {
   async function confirmSignOut() {
     setSignOutState(s => ({ ...s, step: 'leaving' }));
     await signOut({ keepLocalData: true });
+  }
+
+  async function confirmDelete(e) {
+    e.preventDefault();
+    if (deleteState.step === 'deleting') return;
+    if (!deleteState.password) {
+      setDeleteState(s => ({ ...s, error: 'Enter your password.' }));
+      return;
+    }
+    setDeleteState(s => ({ ...s, step: 'deleting', error: null }));
+    try {
+      await deleteAccount(deleteState.password);
+    } catch (err) {
+      setDeleteState(s => ({ ...s, step: 'confirm', error: err.message }));
+    }
   }
 
   const initial = (user.username || user.email || '?').charAt(0).toUpperCase();
@@ -122,10 +143,39 @@ export default function AccountMenu() {
                 <Button variant="danger" onClick={confirmSignOut}>Sign Out</Button>
               </div>
             </div>
+          ) : deleteState.step !== 'idle' ? (
+            <form className={styles.confirm} onSubmit={confirmDelete} noValidate>
+              <p className={styles.confirmText}>
+                This permanently deletes your account, your workouts and every logged set, on the server and on this device.
+                {' '}It can’t be undone.
+              </p>
+              <TextInput
+                id={passwordId}
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                value={deleteState.password}
+                onChange={e => setDeleteState(s => ({ ...s, password: e.target.value, error: null }))}
+              />
+              {deleteState.error && <p className={styles.deleteError} role="alert">{deleteState.error}</p>}
+              <div className={styles.confirmActions}>
+                <Button variant="secondary" onClick={() => setDeleteState(IDLE_DELETE)} disabled={deleteState.step === 'deleting'}>Cancel</Button>
+                <Button type="submit" variant="danger" status={deleteState.step === 'deleting' ? 'loading' : 'idle'}>Delete</Button>
+              </div>
+            </form>
           ) : (
             <Button variant="secondary" fullWidth onClick={handleSignOut} status={busy ? 'loading' : 'idle'}>
               Sign Out
             </Button>
+          )}
+
+          {signOutState.step === 'idle' && deleteState.step === 'idle' && (
+            <div className={styles.privacy}>
+              <p>IronBase stores your email, username, a hashed password and your workouts. Nothing else.</p>
+              <button type="button" className={styles.deleteLink} onClick={() => setDeleteState({ ...IDLE_DELETE, step: 'confirm' })}>
+                Delete account
+              </button>
+            </div>
           )}
         </div>
       )}

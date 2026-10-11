@@ -66,6 +66,11 @@ export async function fetchCurrentUser() {
   return user ?? null;
 }
 
+/** Permanently deletes the signed-in account and all of its data on the server. */
+export async function deleteServerAccount(password) {
+  await apiRequest('/auth/delete-account', { method: 'POST', body: { password } });
+}
+
 export async function endServerSession() {
   await apiRequest('/auth/signout', { method: 'POST' });
 }
